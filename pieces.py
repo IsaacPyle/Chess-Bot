@@ -2,6 +2,7 @@
 
 class Pawn:
     def __init__(self, pos, color):
+        self.name = "Pawn"
         self.color = color
         self.current_pos = pos
         self.moves = [(0, 1), (0, 2)]
@@ -9,6 +10,7 @@ class Pawn:
 
 class Rook:
     def __init__(self, pos, color):
+        self.name = "Rook"
         self.color = color
         self.current_pos = pos
         self.moves = ["h", "v"]
@@ -16,6 +18,7 @@ class Rook:
 
 class Knight:
     def __init__(self, pos, color):
+        self.Knight = "Knight"
         self.color = color
         self.current_pos = pos
         self.moves = [(-2, 1), (-2,-1), (-1, 2), (1, 2), (2, 1), (2, -1), (1, -2), (-1, -2)]
@@ -23,6 +26,7 @@ class Knight:
 
 class Bishop:
     def __init__(self, pos, color):
+        self.name = "Bishop"
         self.color = color
         self.current_pos = pos
         self.moves = ["d"]
@@ -30,6 +34,7 @@ class Bishop:
 
 class Queen:
     def __init__(self, pos, color):
+        self.name = "Queen"
         self.color = color
         self.current_pos = pos
         self.moves = ["h", "d", "v"]
@@ -37,6 +42,7 @@ class Queen:
 
 class King:
     def __init__(self, pos, color):
+        self.name = "King"
         self.color = color
         self.current_pos = pos
         self.moves = [(-1, 0), (-1, 1), (0, 1), (1, 1), (1, 0), (1, -1), (0, -1), (-1, -1)]
