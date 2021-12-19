@@ -1,4 +1,4 @@
-
+ 
 
 class Pawn:
     def __init__(self, pos, color):
@@ -18,7 +18,7 @@ class Rook:
 
 class Knight:
     def __init__(self, pos, color):
-        self.Knight = "Knight"
+        self.name = "Knight"
         self.color = color
         self.current_pos = pos
         self.moves = [(-2, 1), (-2,-1), (-1, 2), (1, 2), (2, 1), (2, -1), (1, -2), (-1, -2)]
