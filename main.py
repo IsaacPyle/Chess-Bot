@@ -1,7 +1,8 @@
+import pygame as py
 from pygame import color
 from pygame.constants import MOUSEBUTTONDOWN, QUIT
 import board
-import pygame as py
+
 
 WIDTH = HEIGHT = 512
 DIMENSION = 8
@@ -44,20 +45,27 @@ def main():
                     selected_square = ()
                     clicks = []
 
-        drawGame(screen, bd)
+
+        drawGame(screen, bd, selected_square)
         clock.tick(MAX_FPS)
         py.display.flip()
 
-def drawGame(screen, game):
-    drawBoard(screen)
+def drawGame(screen, game, selected_square):
+    if selected_square != ():
+        drawBoard(screen, selected_square)
+    else:
+        drawBoard(screen)
+
     drawPieces(screen, game.board_state)
 
-def drawBoard(screen):
+def drawBoard(screen, selected=None):
     colors = [py.Color("#FAEBD7"), py.Color("#CDAA7D")]
     for r in range(DIMENSION):
         for c in range(DIMENSION):
-            color = colors[(r+c) % 2]
+            color = colors[(r+c) % 2] 
             py.draw.rect(screen, color, py.Rect(c*SQUARE_SIZE, r*SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
+    if selected:
+        py.draw.rect(screen, py.Color("#FFFF00"), py.Rect(selected[1]*SQUARE_SIZE, selected[0]*SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
 
 def drawPieces(screen, board):
     for r in range(DIMENSION):
