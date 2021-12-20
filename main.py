@@ -29,21 +29,26 @@ def main():
         for e in py.event.get():
             if e.type == py.QUIT:
                 running = False
-            if e.type == MOUSEBUTTONDOWN:
+            elif e.type == MOUSEBUTTONDOWN:
                 loc = py.mouse.get_pos()
                 col = loc[0] // SQUARE_SIZE
                 row = loc[1] // SQUARE_SIZE
-                if selected_square == (row, col):
-                    selected_square == ()
-                    clicks == []
+                if selected_square == (col, row):
+                    selected_square = ()
+                    clicks = []
                 else:
                     selected_square = (row, col)
                     clicks.append(selected_square)
                 if len(clicks) == 2:
-                    move = board.Move(bd.board_state, clicks[0], clicks[1])
-                    bd.make_move(move)
+                    if bd.board_state[clicks[0][0]][clicks[0][1]] != "--" and bd.board_state[clicks[0][0]][clicks[0][1]] != bd.board_state[clicks[1][0]][clicks[1][1]]:
+                        move = board.Move(bd.board_state, clicks[0], clicks[1])
+                        if bd.check_move(move):
+                            bd.make_move(move)
                     selected_square = ()
                     clicks = []
+            elif e.type == py.KEYDOWN:
+                if e.key == py.K_u:
+                    bd.undo_move()
 
 
         drawGame(screen, bd, selected_square)
