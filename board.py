@@ -52,19 +52,74 @@ class Board():
                         moves.append(Move(self.board_state, (row, col), (row+1, col+1)))
 
     def rook_moves(self, row, col, moves):
-        pass
+        if (self.whites_turn and self.board_state[row][col][0] == "b") or (not self.whites_turn and self.board_state[row][col][0] == "w"):
+            return
+        piece_dir = [(1,0), (0,1), (-1,0), (0,-1)]
+        enemy_color = "b" if self.whites_turn else "w"
+        for dir in piece_dir:
+            for i in range(1, 8):
+                end_row = row + dir[0] * i
+                end_col = col + dir[1] * i
+                if 0 <= end_row < 8 and 0 <= end_col < 8:
+                    if self.board_state[end_row][end_col] == "--": 
+                        moves.append(Move(self.board_state, (row, col), (end_row, end_col)))
+                    elif self.board_state[end_row][end_col][0] == enemy_color:
+                        moves.append(Move(self.board_state, (row, col), (end_row, end_col)))
+                        break
+                    else:
+                        break
+                else:
+                    break
 
     def knight_moves(self, row, col, moves):
-        pass
+        if (self.whites_turn and self.board_state[row][col][0] == "b") or (not self.whites_turn and self.board_state[row][col][0] == "w"):
+            return
+        enemy_color = "b" if self.whites_turn else "w"
+        piece_moves = [(-2, 1), (-2,-1), (-1, 2), (1, 2), (2, 1), (2, -1), (1, -2), (-1, -2)]
+        for move in piece_moves:
+            new_row = row + move[0]
+            new_col = col + move[1]
+            if 0 <= new_row < 8 and 0 <= new_col < 8:
+                if self.board_state[new_row][new_col][0] == "-" or self.board_state[new_row][new_col][0] == enemy_color:
+                    moves.append(Move(self.board_state, (row, col), (new_row, new_col)))
+
+
 
     def bishop_moves(self, row, col, moves):
-        pass
+        if (self.whites_turn and self.board_state[row][col][0] == "b") or (not self.whites_turn and self.board_state[row][col][0] == "w"):
+            return
+        piece_dir = [(1,1), (-1,1), (-1,-1), (1,-1)]
+        enemy_color = "b" if self.whites_turn else "w"
+        for dir in piece_dir:
+            for i in range(1, 8):
+                end_row = row + dir[0] * i
+                end_col = col + dir[1] * i
+                if 0 <= end_row < 8 and 0 <= end_col < 8:
+                    if self.board_state[end_row][end_col] == "--": 
+                        moves.append(Move(self.board_state, (row, col), (end_row, end_col)))
+                    elif self.board_state[end_row][end_col][0] == enemy_color:
+                        moves.append(Move(self.board_state, (row, col), (end_row, end_col)))
+                        break
+                    else:
+                        break
+                else:
+                    break
 
     def queen_moves(self, row, col, moves):
-        pass
+        self.bishop_moves(row, col, moves)
+        self.rook_moves(row, col, moves)
 
     def king_moves(self, row, col, moves):
-        pass
+        if (self.whites_turn and self.board_state[row][col][0] == "b") or (not self.whites_turn and self.board_state[row][col][0] == "w"):
+            return
+        enemy_color = "b" if self.whites_turn else "w"
+        piece_moves = [(-1, 1), (-1,-1), (1, 1), (1, -1), (0, 1), (0, -1), (1, 0), (-1, 0)]
+        for move in piece_moves:
+            new_row = row + move[0]
+            new_col = col + move[1]
+            if 0 <= new_row < 8 and 0 <= new_col < 8:
+                if self.board_state[new_row][new_col][0] == "-" or self.board_state[new_row][new_col][0] == enemy_color:
+                    moves.append(Move(self.board_state, (row, col), (new_row, new_col)))
 
 
     def make_move(self, move):
