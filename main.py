@@ -25,6 +25,7 @@ def main():
     running = True
     selected_square = ()
     clicks = []
+    valid_moves = bd.get_valid_moves()
     while running:
         for e in py.event.get():
             if e.type == py.QUIT:
@@ -33,17 +34,19 @@ def main():
                 loc = py.mouse.get_pos()
                 col = loc[0] // SQUARE_SIZE
                 row = loc[1] // SQUARE_SIZE
-                if selected_square == (col, row):
+                if selected_square == (row, col):
                     selected_square = ()
                     clicks = []
                 else:
                     selected_square = (row, col)
                     clicks.append(selected_square)
                 if len(clicks) == 2:
-                    if bd.board_state[clicks[0][0]][clicks[0][1]] != "--" and bd.board_state[clicks[0][0]][clicks[0][1]] != bd.board_state[clicks[1][0]][clicks[1][1]]:
+                    if bd.board_state[clicks[0][0]][clicks[0][1]] != "--":
                         move = board.Move(bd.board_state, clicks[0], clicks[1])
-                        if bd.check_move(move):
-                            bd.make_move(move)
+                        for other in valid_moves:
+                            if move.check_eq(other):
+                                bd.make_move(move)
+                                valid_moves = bd.get_valid_moves()
                     selected_square = ()
                     clicks = []
             elif e.type == py.KEYDOWN:
@@ -78,6 +81,8 @@ def drawPieces(screen, board):
             piece = board[r][c] 
             if piece != "--":
                 screen.blit(IMAGES[piece], py.Rect(c*SQUARE_SIZE, r*SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
+
+
 
 if __name__ == "__main__":
     main()

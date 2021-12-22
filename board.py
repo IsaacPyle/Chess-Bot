@@ -13,32 +13,58 @@ class Board():
             ["wR", "wN", "wB", "wQ", "wK", "wB", "wN", "wR"],
         ]
         self.board_state = self.initial_state
+        self.move_functions = {"P": self.pawn_moves, "R": self.rook_moves, "B": self.bishop_moves, "N": self.knight_moves, "Q": self.queen_moves, "K": self.king_moves}
 
-    def check_move(self, move):
-        if (move.moved_piece[0] == "w" and not self.whites_turn) or (move.moved_piece[0] == "b" and self.whites_turn):
-            return False
-        
-        piece = move.moved_piece
-        if piece == "wP":
-            if piece in [x.moved_piece for x in self.move_log]:
-                if (move.start_row == move.end_row + 1 or move.start_row == move.end_row + 2) and move.start_col == move.end_col:
-                    return True
-                else:
-                    return False
-            else:
-                if move.start_row == move.end_row + 1 and move.start_col == move.end_col:
-                    return True
-                else:
-                    return False
+    def get_valid_moves(self):
+        moves = []
+        for row in range(len(self.board_state)):
+            for col in range(len(self.board_state[row])):
+                piece = self.board_state[row][col][1]
+                if piece != "-":
+                    self.move_functions[piece](row, col, moves)
 
-        if piece == "bP":
-            if move.start_row == move.end_row - 1 and move.start_col == move.end_col:
-                return True
-            else:
-                return False
+        return moves
 
-        return True
-        
+    def pawn_moves(self, row, col, moves):
+        if self.whites_turn:
+            if self.board_state[row][col] == "wP":
+                if self.board_state[row-1][col] == "--":
+                    moves.append(Move(self.board_state, (row, col), (row-1, col)))
+                    if row == 6 and self.board_state[row-2][col] == "--":
+                        moves.append(Move(self.board_state, (row, col), (row-2, col)))
+                if col > 0:
+                    if self.board_state[row-1][col-1][0] == "b":
+                        moves.append(Move(self.board_state, (row, col), (row-1, col-1)))
+                if col < 7:
+                    if self.board_state[row-1][col+1][0] == "b":
+                        moves.append(Move(self.board_state, (row, col), (row-1, col+1)))
+        elif not self.whites_turn:
+            if self.board_state[row][col] == "bP":
+                if self.board_state[row+1][col] == "--":
+                    moves.append(Move(self.board_state, (row, col), (row+1, col)))
+                    if row == 1 and self.board_state[row+2][col] == "--":
+                        moves.append(Move(self.board_state, (row, col), (row+2, col)))
+                if col > 0:
+                    if self.board_state[row+1][col-1][0] == "w":
+                        moves.append(Move(self.board_state, (row, col), (row+1, col-1)))
+                if col < 7:
+                    if self.board_state[row+1][col+1][0] == "w":
+                        moves.append(Move(self.board_state, (row, col), (row+1, col+1)))
+
+    def rook_moves(self, row, col, moves):
+        pass
+
+    def knight_moves(self, row, col, moves):
+        pass
+
+    def bishop_moves(self, row, col, moves):
+        pass
+
+    def queen_moves(self, row, col, moves):
+        pass
+
+    def king_moves(self, row, col, moves):
+        pass
 
 
     def make_move(self, move):
@@ -64,6 +90,11 @@ class Move():
         self.end_col = end[1]
         self.moved_piece = board[self.start_row][self.start_col]
         self.captured_piece = board[self.end_row][self.end_col]
+
+    def check_eq(self, other_move):
+        first = self.start_col * 1000 + self.start_row * 100 + self.end_row * 10 + self.end_col
+        second = other_move.start_col * 1000 + other_move.start_row * 100 + other_move.end_row * 10 + other_move.end_col
+        return first == second
 
     def get_chess_notation(self, row, col):
         letters = "hgfedcba"
