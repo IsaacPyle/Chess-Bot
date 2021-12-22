@@ -14,8 +14,37 @@ class Board():
         ]
         self.board_state = self.initial_state
         self.move_functions = {"P": self.pawn_moves, "R": self.rook_moves, "B": self.bishop_moves, "N": self.knight_moves, "Q": self.queen_moves, "K": self.king_moves}
+        self.white_king_loc = (7, 4)
+        self.black_king_loc = (0, 4)
 
     def get_valid_moves(self):
+        valid_moves = self.get_all_moves()
+        for i in range(len(valid_moves) - 1, -1, -1):
+            self.make_move(valid_moves[i])
+            self.whites_turn = not self.whites_turn
+            if self.check():
+                valid_moves.remove(valid_moves[i])
+            self.whites_turn = not self.whites_turn
+            self.undo_move()
+
+        return valid_moves
+
+    def check(self):
+        if self.whites_turn:
+            return self.piece_attacked(self.white_king_loc[0], self.white_king_loc[1])
+        else:
+            return self.piece_attacked(self.black_king_loc[0], self.black_king_loc[1])
+
+    def piece_attacked(self, row, col):
+        self.whites_turn = not self.whites_turn
+        opponent_moves = self.get_all_moves()
+        self.whites_turn = not self.whites_turn
+        for move in opponent_moves:
+            if move.end_col == col and move.end_row == row:
+                return True
+        return False
+    
+    def get_all_moves(self):
         moves = []
         for row in range(len(self.board_state)):
             for col in range(len(self.board_state[row])):
@@ -109,6 +138,7 @@ class Board():
         self.bishop_moves(row, col, moves)
         self.rook_moves(row, col, moves)
 
+
     def king_moves(self, row, col, moves):
         if (self.whites_turn and self.board_state[row][col][0] == "b") or (not self.whites_turn and self.board_state[row][col][0] == "w"):
             return
@@ -123,15 +153,23 @@ class Board():
 
 
     def make_move(self, move):
+        if self.board_state[move.start_row][move.start_col] == "wK":
+            self.white_king_loc = (move.end_row, move.end_col)
+        elif self.board_state[move.start_row][move.start_col] == "bK":
+            self.black_king_loc = (move.end_row, move.end_col)
         self.board_state[move.start_row][move.start_col] = "--"
         self.board_state[move.end_row][move.end_col] = move.moved_piece
         self.whites_turn = not self.whites_turn
         self.move_log.append(move)
-        print(move.get_chess_notation(move.start_row, move.start_col) + move.get_chess_notation(move.end_row, move.end_col))
+        
 
     def undo_move(self):
         if len(self.move_log) > 0:
             prev_move = self.move_log.pop()
+            if self.board_state[prev_move.end_row][prev_move.end_col] == "wK":
+                self.white_king_loc = (prev_move.start_row, prev_move.start_col)
+            elif self.board_state[prev_move.end_row][prev_move.end_col] == "bK":
+                self.black_king_loc = (prev_move.start_row, prev_move.start_col)
             self.board_state[prev_move.end_row][prev_move.end_col] = prev_move.captured_piece
             self.board_state[prev_move.start_row][prev_move.start_col] = prev_move.moved_piece
             self.whites_turn = not self.whites_turn
