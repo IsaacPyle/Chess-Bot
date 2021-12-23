@@ -201,7 +201,10 @@ class Board():
         elif self.board_state[move.start_row][move.start_col] == "bK":
             self.black_king_loc = (move.end_row, move.end_col)
         self.board_state[move.start_row][move.start_col] = "--"
-        self.board_state[move.end_row][move.end_col] = move.moved_piece
+        if move.pawn_promotion:
+            self.board_state[move.end_row][move.end_col] = move.moved_piece[0] + "Q"
+        else:
+            self.board_state[move.end_row][move.end_col] = move.moved_piece
         self.whites_turn = not self.whites_turn
         self.move_log.append(move)
         
@@ -233,8 +236,11 @@ class Move():
         self.start_col = start[1]
         self.end_row = end[0]
         self.end_col = end[1]
+        self.pawn_promotion = False
         self.moved_piece = board[self.start_row][self.start_col]
         self.captured_piece = board[self.end_row][self.end_col]
+        if (self.moved_piece == "wP" and self.end_row == 0) or (self.moved_piece == "bP" and self.end_row == 7):
+            self.pawn_promotion = True
 
     def check_eq(self, other_move):
         '''
