@@ -1,4 +1,9 @@
+
 class Board():
+    '''
+    Stores all information regarding current and starting board state, and handles generating possible moves for each piece. 
+    Keeps a log of moves made to be able to undo moves using the "u" key.
+    '''
     def __init__(self):
         self.whites_turn = True
         self.move_log = []
@@ -18,6 +23,11 @@ class Board():
         self.black_king_loc = (0, 4)
 
     def get_valid_moves(self):
+        '''
+        Gets all possible moves and removes moves that leave or put the king in check. 
+        Requires making all possible moves by the current player, then checking all possible moves from the opponent,
+        to see if the king could be captured. Naive algorithm, and can be improved.
+        '''
         valid_moves = self.get_all_moves()
         for i in range(len(valid_moves) - 1, -1, -1):
             self.make_move(valid_moves[i])
@@ -29,22 +39,10 @@ class Board():
 
         return valid_moves
 
-    def check(self):
-        if self.whites_turn:
-            return self.piece_attacked(self.white_king_loc[0], self.white_king_loc[1])
-        else:
-            return self.piece_attacked(self.black_king_loc[0], self.black_king_loc[1])
-
-    def piece_attacked(self, row, col):
-        self.whites_turn = not self.whites_turn
-        opponent_moves = self.get_all_moves()
-        self.whites_turn = not self.whites_turn
-        for move in opponent_moves:
-            if move.end_col == col and move.end_row == row:
-                return True
-        return False
-    
     def get_all_moves(self):
+        '''
+        Gets all moves possible for the current board state.
+        '''
         moves = []
         for row in range(len(self.board_state)):
             for col in range(len(self.board_state[row])):
@@ -54,7 +52,33 @@ class Board():
 
         return moves
 
+    def check(self):
+        '''
+        Checks if the current player's king is being attacked by any enemy piece, using the "piece_attacked" method 
+        '''
+        if self.whites_turn:
+            return self.piece_attacked(self.white_king_loc[0], self.white_king_loc[1])
+        else:
+            return self.piece_attacked(self.black_king_loc[0], self.black_king_loc[1])
+
+    def piece_attacked(self, row, col):
+        '''
+        Checks is a particular piece is being attacked. Makes all moves by opponent, and sees
+        if any of them can capture the piece.
+        '''
+        self.whites_turn = not self.whites_turn
+        opponent_moves = self.get_all_moves()
+        self.whites_turn = not self.whites_turn
+        for move in opponent_moves:
+            if move.end_col == col and move.end_row == row:
+                return True
+        return False
+
     def pawn_moves(self, row, col, moves):
+        '''
+        Gets all possible moves for the pawn at (row, col) in the board_state, including captures and regular movement.
+        Does not handle en passant or pawn promotion.
+        '''
         if self.whites_turn:
             if self.board_state[row][col] == "wP":
                 if self.board_state[row-1][col] == "--":
@@ -67,7 +91,7 @@ class Board():
                 if col < 7:
                     if self.board_state[row-1][col+1][0] == "b":
                         moves.append(Move(self.board_state, (row, col), (row-1, col+1)))
-        elif not self.whites_turn:
+        else:
             if self.board_state[row][col] == "bP":
                 if self.board_state[row+1][col] == "--":
                     moves.append(Move(self.board_state, (row, col), (row+1, col)))
@@ -81,6 +105,9 @@ class Board():
                         moves.append(Move(self.board_state, (row, col), (row+1, col+1)))
 
     def rook_moves(self, row, col, moves):
+        '''
+        Gets all possible moves for the rook at (row, col) in the board_state, including captures and regular movement.
+        '''
         if (self.whites_turn and self.board_state[row][col][0] == "b") or (not self.whites_turn and self.board_state[row][col][0] == "w"):
             return
         piece_dir = [(1,0), (0,1), (-1,0), (0,-1)]
@@ -101,6 +128,9 @@ class Board():
                     break
 
     def knight_moves(self, row, col, moves):
+        '''
+        Gets all possible moves for the knight at (row, col) in the board_state, including captures and regular movement.
+        '''
         if (self.whites_turn and self.board_state[row][col][0] == "b") or (not self.whites_turn and self.board_state[row][col][0] == "w"):
             return
         enemy_color = "b" if self.whites_turn else "w"
@@ -113,8 +143,10 @@ class Board():
                     moves.append(Move(self.board_state, (row, col), (new_row, new_col)))
 
 
-
     def bishop_moves(self, row, col, moves):
+        '''
+        Gets all possible moves for the bishop at (row, col) in the board_state, including captures and regular movement.
+        '''
         if (self.whites_turn and self.board_state[row][col][0] == "b") or (not self.whites_turn and self.board_state[row][col][0] == "w"):
             return
         piece_dir = [(1,1), (-1,1), (-1,-1), (1,-1)]
@@ -135,11 +167,18 @@ class Board():
                     break
 
     def queen_moves(self, row, col, moves):
+        '''
+        Gets all possible moves for the queen at (row, col) in the board_state, including captures and regular movement.
+        Because the queen acts as a bishop and a rook combined, their logic is used to generate possible moves for the queen.
+        '''
         self.bishop_moves(row, col, moves)
         self.rook_moves(row, col, moves)
 
 
     def king_moves(self, row, col, moves):
+        '''
+        Gets all possible moves for the king at (row, col) in the board_state, including captures and regular movement.
+        '''
         if (self.whites_turn and self.board_state[row][col][0] == "b") or (not self.whites_turn and self.board_state[row][col][0] == "w"):
             return
         enemy_color = "b" if self.whites_turn else "w"
@@ -153,6 +192,10 @@ class Board():
 
 
     def make_move(self, move):
+        '''
+        Takes a move, updates the board_state and king location variables, inverts whites_turn variable, 
+        and appends the move to move_log.
+        '''
         if self.board_state[move.start_row][move.start_col] == "wK":
             self.white_king_loc = (move.end_row, move.end_col)
         elif self.board_state[move.start_row][move.start_col] == "bK":
@@ -164,6 +207,10 @@ class Board():
         
 
     def undo_move(self):
+        '''
+        Takes the most recent move from the move_log, pops it and does the opposite. 
+        Also reverts whites turn and updates king location variables if necessary
+        '''
         if len(self.move_log) > 0:
             prev_move = self.move_log.pop()
             if self.board_state[prev_move.end_row][prev_move.end_col] == "wK":
@@ -176,6 +223,11 @@ class Board():
 
 
 class Move():
+    '''
+    Initializes with the current board state, a starting location, and an ending location. 
+    Saves the piece that was moved and the piece that was captured ('--' if ending location was empty).
+
+    '''
     def __init__(self, board, start, end):
         self.start_row = start[0]
         self.start_col = start[1]
@@ -185,11 +237,19 @@ class Move():
         self.captured_piece = board[self.end_row][self.end_col]
 
     def check_eq(self, other_move):
+        '''
+        Confirms that moves are the same, which is needed since we create moves to check against that 
+        are different in memory but the same on the board.
+        '''
         first = self.start_col * 1000 + self.start_row * 100 + self.end_row * 10 + self.end_col
         second = other_move.start_col * 1000 + other_move.start_row * 100 + other_move.end_row * 10 + other_move.end_col
         return first == second
 
     def get_chess_notation(self, row, col):
+        '''
+        Converts (row, col) to chess notation which is 'File-Rank', so moving from the 
+        first row first column to the third row first column would be 'a1' to 'a3'.
+        '''
         letters = "hgfedcba"
         return letters[7-col] + str(8-row)
 
