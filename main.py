@@ -1,12 +1,15 @@
 import pygame as py
 import board
+import random
+import bot
 
 
 WIDTH = HEIGHT = 512
 DIMENSION = 8
 SQUARE_SIZE = HEIGHT // DIMENSION
 MAX_FPS = 15
-IMAGES = {}
+IMAGES_MAIN = {}
+IMAGES_ALT = {}
 
 def load_initial_images():
     '''
@@ -15,7 +18,7 @@ def load_initial_images():
     '''
     pieces = ["wP", "wR", "wN", "wB", "wQ", "wK", "bQ", "bK", "bB", "bN", "bR", "bP"]
     for piece in pieces:
-        IMAGES[piece] = py.transform.scale(py.image.load("images/" + piece + ".png").convert_alpha(), (SQUARE_SIZE, SQUARE_SIZE))
+        IMAGES_MAIN[piece] = py.transform.scale(py.image.load("images/" + piece + ".png").convert_alpha(), (SQUARE_SIZE, SQUARE_SIZE))
 
 def main():
     py.init()
@@ -23,6 +26,7 @@ def main():
     clock = py.time.Clock()
     screen.fill(py.Color("white"))
     bd = board.Board()
+    AI = bot.Bot()
     load_initial_images()
     running = True
     selected_square = ()
@@ -49,9 +53,15 @@ def main():
                         for other in valid_moves:
                             if move.check_eq(other):
                                 bd.make_move(move)
+                                # Uncomment for AI to make random move, only random and not using AI at the moment
                                 valid_moves = bd.get_valid_moves()
+                                # valid_moves = AI.make_move(valid_moves, bd)
+                                for move in valid_moves:
+                                    if move.enpassant_move:
+                                        print(move.start_row, move.start_col, move.end_row, move.end_col)
                     selected_square = ()
                     clicks = []
+                    
             elif e.type == py.KEYDOWN: # Handles 'u' key being pressed, indicating the user wants to undo a move
                 if e.key == py.K_u:
                     bd.undo_move()
@@ -93,11 +103,9 @@ def drawPieces(screen, game):
         for c in range(DIMENSION):
             piece = board[r][c] 
             if piece != "--":
-                screen.blit(IMAGES[piece], py.Rect(c*SQUARE_SIZE, r*SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
+                screen.blit(IMAGES_MAIN[piece], py.Rect(c*SQUARE_SIZE, r*SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
 
     # Here depending on further implementation we could invert the board when opponent's turn
-
-
 
 if __name__ == "__main__":
     main()
