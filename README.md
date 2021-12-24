@@ -1,12 +1,12 @@
 # Python Chess Game
 
 A simple python chess game, hopefully with the option to 
-either play against another user or a bot playey.
+either play against another user or a bot player.
 
 ## About
 
 Developed as a personal project, this Chess game features all
-rules of chess and is about 80% functional at this at the moment.
+rules of chess and is about 80% functional at the moment.
 The UI is very minimal for now, as I have been working on the 
 backend functionality instead. Soon there will be more menus and
 a win/lose screen.
@@ -20,10 +20,10 @@ other tile colors.
 
 ## Usage
 
-All that is necessary to run currently is to run the main.py file, 
+All that is necessary to play is to run the main.py file, 
 which boots up the game. From there, you can simply move pieces in 
-their expected moves, and the game ends when one of the kings has 
-no possible moves.
+their expected moves, and the game ends when one of the players has 
+no possible moves to keep their king from being captured.
 
 ## Roadmap
 
