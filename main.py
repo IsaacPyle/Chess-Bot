@@ -8,6 +8,7 @@ WIDTH = HEIGHT = 512
 DIMENSION = 8
 SQUARE_SIZE = HEIGHT // DIMENSION
 MAX_FPS = 15
+ICON_IMAGES = {}
 IMAGES_MAIN = {}
 IMAGES_ALT = {}
 
@@ -19,15 +20,18 @@ def load_initial_images():
     pieces = ["wP", "wR", "wN", "wB", "wQ", "wK", "bQ", "bK", "bB", "bN", "bR", "bP"]
     for piece in pieces:
         IMAGES_MAIN[piece] = py.transform.scale(py.image.load("images/" + piece + ".png").convert_alpha(), (SQUARE_SIZE, SQUARE_SIZE))
+    ICON_IMAGES["Icon"] = py.transform.scale(py.image.load("images/icon.png").convert_alpha(), (SQUARE_SIZE, SQUARE_SIZE))
 
 def main():
     py.init()
     screen = py.display.set_mode((WIDTH, HEIGHT))
+    load_initial_images()
+    py.display.set_caption('A Game of Chess')
+    py.display.set_icon(ICON_IMAGES["Icon"])
     clock = py.time.Clock()
     screen.fill(py.Color("white"))
     bd = board.Board()
     AI = bot.Bot()
-    load_initial_images()
     running = True
     selected_square = ()
     clicks = []
@@ -56,15 +60,14 @@ def main():
                                 # Uncomment for AI to make random move, only random and not using AI at the moment
                                 valid_moves = bd.get_valid_moves()
                                 # valid_moves = AI.make_move(valid_moves, bd)
-                                for move in valid_moves:
-                                    if move.enpassant_move:
-                                        print(move.start_row, move.start_col, move.end_row, move.end_col)
                     selected_square = ()
                     clicks = []
                     
-            elif e.type == py.KEYDOWN: # Handles 'u' key being pressed, indicating the user wants to undo a move
-                if e.key == py.K_u:
+            elif e.type == py.KEYDOWN: # Handles 'z' key being pressed, indicating the user wants to undo a move
+                if e.key == py.K_z:
                     bd.undo_move()
+                    valid_moves = bd.get_valid_moves()
+
 
 
         drawGame(screen, bd, selected_square)
