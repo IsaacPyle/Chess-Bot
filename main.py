@@ -162,8 +162,10 @@ def animate_move(move, screen, board, clock):
     global colors
     row_dist = move.end_row - move.start_row
     col_dist = move.end_col - move.start_col
-    frames = 5
-    total_frames = (abs(row_dist) + abs(col_dist)) * frames
+    frames = 10
+    total_frames = frames + int((1.2 * abs(row_dist) + abs(col_dist)))# (abs(row_dist) + abs(col_dist)) * frames
+
+
     for frame in range(total_frames + 1):
         row, col = (move.start_row + row_dist*frame/total_frames, move.start_col+ col_dist*frame/total_frames)
         drawBoard(screen)
