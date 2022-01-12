@@ -1,4 +1,3 @@
-
 class Board():
     '''
     Stores all information regarding current and starting board state, and handles generating possible moves for each piece. 
@@ -22,6 +21,8 @@ class Board():
         self.white_king_loc = (7, 4)
         self.black_king_loc = (0, 4)
         self.enpassant = ()
+        self.checkmate = False
+        self.stalemate = False
 
     def get_valid_moves(self):
         '''
@@ -38,8 +39,16 @@ class Board():
                 moves.remove(moves[i])
             self.whites_turn = not self.whites_turn
             self.undo_move()
+
+        
         
         self.enpassant = temp_enpassant
+
+        if len(moves) == 0:
+            if self.check():
+                self.checkmate = True
+            else:
+                self.stalemate = True
 
         return moves
 
@@ -74,7 +83,7 @@ class Board():
         opponent_moves = self.get_all_moves()
         self.whites_turn = not self.whites_turn
         for move in opponent_moves:
-            if move.end_col == col and move.end_row == row:
+            if move.end_row == row and move.end_col == col:
                 return True
         return False
 
@@ -92,12 +101,12 @@ class Board():
                 if self.board_state[row-1][col-1][0] == "b":
                     moves.append(Move(self.board_state, (row, col), (row-1, col-1)))
                 elif (row-1, col-1) == self.enpassant:
-                    moves.append(Move(self.board_state, (row, col), (row-1, col-1), enpassant=True))
+                    moves.append(Move(self.board_state, (row, col), (row-1, col-1), True))
             if col < 7:
                 if self.board_state[row-1][col+1][0] == "b":
                     moves.append(Move(self.board_state, (row, col), (row-1, col+1)))
                 elif (row-1, col+1) == self.enpassant:
-                    moves.append(Move(self.board_state, (row, col), (row-1, col+1), enpassant=True))
+                    moves.append(Move(self.board_state, (row, col), (row-1, col+1), True))
         else:
             if self.board_state[row+1][col] == "--":
                 moves.append(Move(self.board_state, (row, col), (row+1, col)))
@@ -107,12 +116,12 @@ class Board():
                 if self.board_state[row+1][col-1][0] == "w":
                     moves.append(Move(self.board_state, (row, col), (row+1, col-1)))
                 elif (row+1, col-1) == self.enpassant:
-                    moves.append(Move(self.board_state, (row, col), (row+1, col-1), enpassant=True))
+                    moves.append(Move(self.board_state, (row, col), (row+1, col-1), True))
             if col < 7:
                 if self.board_state[row+1][col+1][0] == "w":
                     moves.append(Move(self.board_state, (row, col), (row+1, col+1)))
                 elif (row+1, col+1) == self.enpassant:
-                    moves.append(Move(self.board_state, (row, col), (row+1, col+1), enpassant=True))
+                    moves.append(Move(self.board_state, (row, col), (row+1, col+1), True))
 
     def rook_moves(self, row, col, moves):
         '''
@@ -215,7 +224,6 @@ class Board():
             self.white_king_loc = (move.end_row, move.end_col)
         elif move.moved_piece == "bK":
             self.black_king_loc = (move.end_row, move.end_col)
-        
 
         if move.pawn_promotion:
             self.board_state[move.end_row][move.end_col] = move.moved_piece[0] + "Q"
@@ -228,8 +236,6 @@ class Board():
         else:
             self.enpassant = ()
 
-        
-        
 
     def undo_move(self):
         '''
@@ -248,7 +254,7 @@ class Board():
 
             if prev_move.enpassant_move:
                 self.board_state[prev_move.end_row][prev_move.end_col] = "--"
-                self.board_state[prev_move.start_row][prev_move.end_col] = 'wP' # prev_move.captured_piece
+                self.board_state[prev_move.start_row][prev_move.end_col] = prev_move.captured_piece
                 self.enpassant = (prev_move.end_row, prev_move.end_col)
 
             if prev_move.moved_piece[1] == 'P' and abs(prev_move.start_row - prev_move.end_row) == 2:
@@ -262,7 +268,7 @@ class Move():
     Saves the piece that was moved and the piece that was captured ('--' if ending location was empty).
 
     '''
-    def __init__(self, board, start, end, enpassant=False):
+    def __init__(self, board, start, end, enpassant_possible=False):
         self.start_row = start[0]
         self.start_col = start[1]
         self.end_row = end[0]
@@ -272,7 +278,7 @@ class Move():
         self.pawn_promotion = (self.moved_piece == "wP" and self.end_row == 0) or (self.moved_piece == "bP" and self.end_row == 7)
             
 
-        self.enpassant_move = enpassant
+        self.enpassant_move = enpassant_possible
         if self.enpassant_move:
             self.captured_piece = 'wP' if self.moved_piece == 'bP' else 'bP'
 
