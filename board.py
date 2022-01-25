@@ -1,7 +1,7 @@
 class Board():
     '''
     Stores all information regarding current and starting board state, and handles generating possible moves for each piece. 
-    Keeps a log of moves made to be able to undo moves using the "u" key.
+    Keeps a log of moves made to be able to undo moves using the "z" key.
     '''
     def __init__(self):
         self.whites_turn = True
@@ -20,6 +20,7 @@ class Board():
         self.move_functions = {"P": self.pawn_moves, "R": self.rook_moves, "B": self.bishop_moves, "N": self.knight_moves, "Q": self.queen_moves, "K": self.king_moves}
         self.white_king_loc = (7, 4)
         self.black_king_loc = (0, 4)
+        self.castle_moves = ()
         self.enpassant = ()
         self.checkmate = False
         self.stalemate = False
@@ -40,8 +41,6 @@ class Board():
             self.whites_turn = not self.whites_turn
             self.undo_move()
 
-        
-        
         self.enpassant = temp_enpassant
 
         if len(moves) == 0:
@@ -58,11 +57,12 @@ class Board():
         '''
         moves = []
         for row in range(len(self.board_state)):
-            for col in range(len(self.board_state[row])):
+            for col in range(len(self.board_state[0])):
                 current = self.board_state[row][col][0]
                 if (current == 'w' and self.whites_turn) or (current == 'b' and not self.whites_turn):
                     piece = self.board_state[row][col][1]
-                    self.move_functions[piece](row, col, moves)
+                    if piece != "-":
+                        self.move_functions[piece](row, col, moves)
         return moves
 
     def check(self):
@@ -229,6 +229,7 @@ class Board():
             self.board_state[move.end_row][move.end_col] = move.moved_piece[0] + "Q"
         
         if move.enpassant_move:
+            print("Clearing a {}".format(self.board_state[move.start_row][move.end_col]))
             self.board_state[move.start_row][move.end_col] = "--"
 
         if move.moved_piece[1] == 'P' and abs(move.start_row - move.end_row) == 2:
@@ -247,9 +248,10 @@ class Board():
             self.board_state[prev_move.start_row][prev_move.start_col] = prev_move.moved_piece
             self.board_state[prev_move.end_row][prev_move.end_col] = prev_move.captured_piece
             self.whites_turn = not self.whites_turn
-            if self.board_state[prev_move.end_row][prev_move.end_col] == "wK":
+
+            if prev_move.moved_piece == "wK":
                 self.white_king_loc = (prev_move.start_row, prev_move.start_col)
-            elif self.board_state[prev_move.end_row][prev_move.end_col] == "bK":
+            elif prev_move.moved_piece == "bK":
                 self.black_king_loc = (prev_move.start_row, prev_move.start_col)
 
             if prev_move.enpassant_move:

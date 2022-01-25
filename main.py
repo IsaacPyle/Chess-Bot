@@ -85,6 +85,10 @@ def main():
             if animate:
                 animate_move(bd.move_log[-1], screen, bd, clock)
             valid_moves = bd.get_valid_moves()
+            if bd.check():
+                print("Check")
+            print("En passant: {}".format(bd.enpassant))
+            print(len(valid_moves))
             made_move = False
             animate = False
             
