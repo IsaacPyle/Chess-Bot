@@ -33,6 +33,7 @@ class Board():
         '''
         temp_enpassant = self.enpassant
         moves = self.get_all_moves()
+
         for i in range(len(moves) - 1, -1, -1):
             self.make_move(moves[i])
             self.whites_turn = not self.whites_turn
@@ -233,7 +234,7 @@ class Board():
             self.board_state[move.start_row][move.end_col] = "--"
 
         if move.moved_piece[1] == 'P' and abs(move.start_row - move.end_row) == 2:
-            self.enpassant = ((move.start_row + move.end_row) // 2, move.start_col)
+            self.enpassant = ((move.start_row + move.end_row) // 2, move.end_col)
         else:
             self.enpassant = ()
 

@@ -44,35 +44,40 @@ def main():
     game_over = False
 
     while running: # Main gameplay loop
+        
         for e in py.event.get():
             if e.type == py.QUIT:
                 running = False
             elif e.type == py.MOUSEBUTTONDOWN:
-                loc = py.mouse.get_pos()
-                col = loc[0] // SQUARE_SIZE
-                row = loc[1] // SQUARE_SIZE
-                if selected_square == (row, col): # User clicked the same square twice, we want to deselect it
-                    selected_square = ()
-                    clicks = []
-                else:
-                    selected_square = (row, col)
-                    clicks.append(selected_square)
-                if len(clicks) == 2: # two different squares have been clicked, begin moving piece from first to second
-                    move = board.Move(bd.board_state, clicks[0], clicks[1])
-                    for other in valid_moves:
-                        if move.check_eq(other):
-                            bd.make_move(move)
-                            made_move = True
-                            animate = True
-                            selected_square = ()
-                            clicks = []
-                    if not made_move:
-                        clicks = [selected_square]
+                if not game_over:
+                    loc = py.mouse.get_pos()
+                    col = loc[0] // SQUARE_SIZE
+                    row = loc[1] // SQUARE_SIZE
+                    if selected_square == (row, col): # User clicked the same square twice, we want to deselect it
+                        selected_square = ()
+                        clicks = []
+                    else:
+                        selected_square = (row, col)
+                        clicks.append(selected_square)
+                    if len(clicks) == 2: # two different squares have been clicked, begin moving piece from first to second
+                        move = board.Move(bd.board_state, clicks[0], clicks[1])
+                        for other in valid_moves:
+                            if move.check_eq(other):
+                                bd.make_move(other)
+                                made_move = True
+                                animate = True
+                                selected_square = ()
+                                clicks = []
+                        if not made_move:
+                            clicks = [selected_square]
                     
             elif e.type == py.KEYDOWN: # Handles 'z' key being pressed, indicating the user wants to undo a move
                 if e.key == py.K_z:
                     bd.undo_move()
                     valid_moves = bd.get_valid_moves()
+                    bd.checkmate = False
+                    bd.stalemate = False
+                    game_over = False
                 if e.key == py.K_r:
                     bd = board.Board()
                     valid_moves = bd.get_valid_moves()
@@ -87,8 +92,6 @@ def main():
             valid_moves = bd.get_valid_moves()
             if bd.check():
                 print("Check")
-            print("En passant: {}".format(bd.enpassant))
-            print(len(valid_moves))
             made_move = False
             animate = False
             
