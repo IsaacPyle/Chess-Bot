@@ -5,7 +5,7 @@ import random
 import bot
 
 
-WIDTH = HEIGHT = 512
+WIDTH = HEIGHT = 768
 SIDE_BAR_MULTIPLIER = 1.3
 DIMENSION = 8
 SQUARE_SIZE = HEIGHT // DIMENSION
@@ -14,6 +14,7 @@ ICON_IMAGES = {}
 IMAGES_MAIN = {}
 IMAGES_SMALL = {}
 IMAGES_ALT = {}
+BACKGROUND = py.Color("grey")
 
 def load_initial_images():
     '''
@@ -22,20 +23,37 @@ def load_initial_images():
     '''
     pieces = ["wP", "wR", "wN", "wB", "wQ", "wK", "bQ", "bK", "bB", "bN", "bR", "bP"]
     for piece in pieces:
-        IMAGES_MAIN[piece] = py.transform.scale(py.image.load("images/" + piece + ".png").convert_alpha(), (SQUARE_SIZE, SQUARE_SIZE))
-        IMAGES_SMALL[piece] = py.transform.scale(py.image.load("images/" + piece + ".png").convert_alpha(), (SQUARE_SIZE // 2, SQUARE_SIZE // 2))
+        IMAGES_MAIN[piece] = py.transform.smoothscale(py.image.load("images/" + piece + ".png").convert_alpha(), (SQUARE_SIZE, SQUARE_SIZE))
+        IMAGES_SMALL[piece] = py.transform.smoothscale(IMAGES_MAIN[piece], (SQUARE_SIZE // 2, SQUARE_SIZE // 2))
 
     ICON_IMAGES["Icon"] = py.transform.scale(py.image.load("images/icon.png").convert_alpha(), (SQUARE_SIZE, SQUARE_SIZE))
 
+def draw_gui_elements(screen, font):
+    label = "Captured Pieces"
+    # py.font.SysFont('Helvetica', 16, True, False)
+
+    obj = font.render(label, 0, py.Color('Black'))
+    location = py.Rect(WIDTH, 0, (WIDTH*SIDE_BAR_MULTIPLIER)-WIDTH, HEIGHT).move((((WIDTH * SIDE_BAR_MULTIPLIER) - WIDTH)/2) - obj.get_width()/2, HEIGHT * .7 - obj.get_height()/2)
+    screen.blit(obj, location)
+    obj = font.render(label, 0, py.Color('White'))
+    screen.blit(obj, location.move(-2, -2))
+
+    obj = font.render(label, 0, py.Color('White'))
+    location = py.Rect(WIDTH, 0, (WIDTH*SIDE_BAR_MULTIPLIER)-WIDTH, HEIGHT).move((((WIDTH * SIDE_BAR_MULTIPLIER) - WIDTH)/2) - obj.get_width()/2, HEIGHT * .05 + obj.get_height()/2)
+    screen.blit(obj, location)
+    obj = font.render(label, 0, py.Color('Black'))
+    screen.blit(obj, location.move(-2, -2))
+
 def main():
     py.init()
+    font = py.font.Font('freesansbold.ttf', WIDTH // 32)
     screen = py.display.set_mode((WIDTH * SIDE_BAR_MULTIPLIER, HEIGHT))
     load_initial_images()
     py.display.set_caption('A Game of Chess')
     py.display.set_icon(ICON_IMAGES["Icon"])
-    font = py.font.Font('freesansbold.ttf', 32)
     clock = py.time.Clock()
-    screen.fill(py.Color("grey"))
+    screen.fill(BACKGROUND)
+    draw_gui_elements(screen, font)
     bd = board.Board()
     AI = bot.Bot()
     selected_square = ()
@@ -142,8 +160,6 @@ def drawGame(screen, game, selected_square, king_check):
     else:
         drawBoard(screen)
 
-        
-
     drawPieces(screen, game)
     drawCaptured(screen, game)
 
@@ -184,7 +200,7 @@ def drawCaptured(screen, game):
     size = SQUARE_SIZE // 2
 
     if white_pieces != []:
-        start_vert = 0
+        start_vert = HEIGHT * .125
         for i, piece in enumerate(white_pieces):
             x = start_horiz + ((sidebar_size // 4) * (i % 4))
             y = start_vert + (size * (i // 4))
@@ -192,9 +208,9 @@ def drawCaptured(screen, game):
         for i in range(len(white_pieces), 16):
             x = start_horiz + ((sidebar_size // 4) * (i % 4))
             y = start_vert + (size * (i // 4))
-            py.draw.rect(screen, py.Color("grey"), py.Rect(x, y, size, size))
+            py.draw.rect(screen, BACKGROUND, py.Rect(x, y, size, size))
     else:
-        py.draw.rect(screen, py.Color("grey"), py.Rect(WIDTH, 0, WIDTH * (SIDE_BAR_MULTIPLIER - 1), HEIGHT // 4))
+        py.draw.rect(screen, BACKGROUND, py.Rect(WIDTH, HEIGHT * .125, WIDTH * (SIDE_BAR_MULTIPLIER - 1), HEIGHT // 4))
 
     if black_pieces != []:
         start_vert = HEIGHT * .75
@@ -205,9 +221,9 @@ def drawCaptured(screen, game):
         for i in range(len(black_pieces), 16):
             x = start_horiz + ((sidebar_size // 4) * (i % 4))
             y = start_vert + (size * (i // 4))
-            py.draw.rect(screen, py.Color("grey"), py.Rect(x, y, size, size))
+            py.draw.rect(screen, BACKGROUND, py.Rect(x, y, size, size))
     else:
-        py.draw.rect(screen, py.Color("grey"), py.Rect(WIDTH, HEIGHT * .75, WIDTH * (SIDE_BAR_MULTIPLIER - 1), HEIGHT // 4))
+        py.draw.rect(screen, BACKGROUND, py.Rect(WIDTH, HEIGHT * .75, WIDTH * (SIDE_BAR_MULTIPLIER - 1), HEIGHT // 4))
 
 
 def animate_move(move, screen, board, clock):
