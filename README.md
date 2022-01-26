@@ -29,11 +29,11 @@ no possible moves to keep their king from being captured.
 
 I am planning on many changes in the near future. For starters, 
 there are a few minor bugs that need worked out, and a new state 
-needs to be added for the end of the game (currently the game just closes.)
+needs to be added for the end of the game ~~(currently the game just closes.)~~
 Thus, my ideas are:
 
-* Fix known bugs (en passant in particular)
-* Add game end screen
+* ~~Fix known bugs (en passant in particular)~~ Done
+* Add game end screen <-- Added text, need to add more functionality
 * Add castling functionality
 * Implement basic AI player (checking 1-2 moves into the future?)
 * Implement more advanced AI player (using minimax / Alpha-Beta pruning)
