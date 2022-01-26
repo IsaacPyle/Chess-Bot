@@ -1,5 +1,4 @@
 import pygame as py
-from pygame import display
 from pygame.constants import CONTROLLERAXISMOTION
 import board
 import random
@@ -7,11 +6,13 @@ import bot
 
 
 WIDTH = HEIGHT = 512
+SIDE_BAR_MULTIPLIER = 1.3
 DIMENSION = 8
 SQUARE_SIZE = HEIGHT // DIMENSION
 MAX_FPS = 15
 ICON_IMAGES = {}
 IMAGES_MAIN = {}
+IMAGES_SMALL = {}
 IMAGES_ALT = {}
 
 def load_initial_images():
@@ -22,11 +23,13 @@ def load_initial_images():
     pieces = ["wP", "wR", "wN", "wB", "wQ", "wK", "bQ", "bK", "bB", "bN", "bR", "bP"]
     for piece in pieces:
         IMAGES_MAIN[piece] = py.transform.scale(py.image.load("images/" + piece + ".png").convert_alpha(), (SQUARE_SIZE, SQUARE_SIZE))
+        IMAGES_SMALL[piece] = py.transform.scale(py.image.load("images/" + piece + ".png").convert_alpha(), (SQUARE_SIZE // 2, SQUARE_SIZE // 2))
+
     ICON_IMAGES["Icon"] = py.transform.scale(py.image.load("images/icon.png").convert_alpha(), (SQUARE_SIZE, SQUARE_SIZE))
 
 def main():
     py.init()
-    screen = py.display.set_mode((WIDTH * 1.3, HEIGHT))
+    screen = py.display.set_mode((WIDTH * SIDE_BAR_MULTIPLIER, HEIGHT))
     load_initial_images()
     py.display.set_caption('A Game of Chess')
     py.display.set_icon(ICON_IMAGES["Icon"])
@@ -95,6 +98,7 @@ def main():
                     clicks = []
                     made_move = False
                     animate = False
+                    game_over = False
 
         if made_move:
             if animate:
@@ -138,7 +142,10 @@ def drawGame(screen, game, selected_square, king_check):
     else:
         drawBoard(screen)
 
+        
+
     drawPieces(screen, game)
+    drawCaptured(screen, game)
 
 def drawBoard(screen, selected=None, king_check=None):
     '''
@@ -168,6 +175,40 @@ def drawPieces(screen, game):
                 screen.blit(IMAGES_MAIN[piece], py.Rect(c*SQUARE_SIZE, r*SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
 
     # Here depending on further implementation we could invert the board when opponent's turn
+
+def drawCaptured(screen, game):
+    white_pieces = game.captured_white_pieces
+    black_pieces = game.captured_black_pieces
+    sidebar_size = WIDTH * 0.3
+    start_horiz = WIDTH
+    size = SQUARE_SIZE // 2
+
+    if white_pieces != []:
+        start_vert = 0
+        for i, piece in enumerate(white_pieces):
+            x = start_horiz + ((sidebar_size // 4) * (i % 4))
+            y = start_vert + (size * (i // 4))
+            screen.blit(IMAGES_SMALL[piece], py.Rect(x, y, size, size))
+        for i in range(len(white_pieces), 16):
+            x = start_horiz + ((sidebar_size // 4) * (i % 4))
+            y = start_vert + (size * (i // 4))
+            py.draw.rect(screen, py.Color("grey"), py.Rect(x, y, size, size))
+    else:
+        py.draw.rect(screen, py.Color("grey"), py.Rect(WIDTH, 0, WIDTH * (SIDE_BAR_MULTIPLIER - 1), HEIGHT // 4))
+
+    if black_pieces != []:
+        start_vert = HEIGHT * .75
+        for i, piece in enumerate(black_pieces):
+            x = start_horiz + ((sidebar_size // 4) * (i % 4))
+            y = start_vert + (size * (i // 4))
+            screen.blit(IMAGES_SMALL[piece], py.Rect(x, y, size, size))
+        for i in range(len(black_pieces), 16):
+            x = start_horiz + ((sidebar_size // 4) * (i % 4))
+            y = start_vert + (size * (i // 4))
+            py.draw.rect(screen, py.Color("grey"), py.Rect(x, y, size, size))
+    else:
+        py.draw.rect(screen, py.Color("grey"), py.Rect(WIDTH, HEIGHT * .75, WIDTH * (SIDE_BAR_MULTIPLIER - 1), HEIGHT // 4))
+
 
 def animate_move(move, screen, board, clock):
     global colors

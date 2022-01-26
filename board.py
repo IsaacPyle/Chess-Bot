@@ -24,6 +24,8 @@ class Board():
         self.enpassant = ()
         self.checkmate = False
         self.stalemate = False
+        self.captured_white_pieces = []
+        self.captured_black_pieces = []
 
     def get_valid_moves(self):
         '''
@@ -237,6 +239,15 @@ class Board():
         else:
             self.enpassant = ()
 
+        if move.player_moved:
+            if move.captured_piece[0] == "w":
+                self.captured_white_pieces.append(move.captured_piece)
+
+            elif move.captured_piece[0] == "b":
+                self.captured_black_pieces.append(move.captured_piece)
+
+
+
 
     def undo_move(self):
         '''
@@ -262,6 +273,12 @@ class Board():
             if prev_move.moved_piece[1] == 'P' and abs(prev_move.start_row - prev_move.end_row) == 2:
                 self.enpassant = ()
 
+            if prev_move.player_moved:
+                if prev_move.captured_piece[0] == "w":
+                    self.captured_white_pieces.pop()
+
+                elif prev_move.captured_piece[0] == "b":
+                    self.captured_black_pieces.pop()
 
 
 class Move():
@@ -278,7 +295,7 @@ class Move():
         self.moved_piece = board[self.start_row][self.start_col]
         self.captured_piece = board[self.end_row][self.end_col]
         self.pawn_promotion = (self.moved_piece == "wP" and self.end_row == 0) or (self.moved_piece == "bP" and self.end_row == 7)
-            
+        self.player_moved = True if self.captured_piece != "--" else False
 
         self.enpassant_move = enpassant_possible
         if self.enpassant_move:
