@@ -5,7 +5,7 @@ import random
 import bot
 
 
-WIDTH = HEIGHT = 768
+WIDTH = HEIGHT = 512
 SIDE_BAR_MULTIPLIER = 1.3
 DIMENSION = 8
 SQUARE_SIZE = HEIGHT // DIMENSION
@@ -75,31 +75,32 @@ def main():
                     loc = py.mouse.get_pos()
                     col = loc[0] // SQUARE_SIZE
                     row = loc[1] // SQUARE_SIZE
-                    if selected_square == (row, col): # User clicked the same square twice, we want to deselect it
-                        selected_square = ()
-                        clicks = []
-                    else:
-                        selected_square = (row, col)
-                        clicks.append(selected_square)
-                    if len(clicks) == 2: # two different squares have been clicked, begin moving piece from first to second
-                        move = board.Move(bd.board_state, clicks[0], clicks[1])
-                        for other in valid_moves:
-                            if move.check_eq(other):
-                                bd.make_move(other)
-                                made_move = True
-                                animate = True
-                                selected_square = ()
-                                clicks = []
-                                king_check = False
+                    if col < 8:
+                        if selected_square == (row, col): # User clicked the same square twice, we want to deselect it
+                            selected_square = ()
+                            clicks = []
+                        else:
+                            selected_square = (row, col)
+                            clicks.append(selected_square)
+                        if len(clicks) == 2: # two different squares have been clicked, begin moving piece from first to second
+                            move = board.Move(bd.board_state, clicks[0], clicks[1])
+                            for other in valid_moves:
+                                if move.check_eq(other):
+                                    bd.make_move(other)
+                                    made_move = True
+                                    animate = True
+                                    selected_square = ()
+                                    clicks = []
+                                    king_check = False
 
-                        if not made_move:
-                            clicks = [selected_square]
-                            bd.make_move(move)
-                            bd.whites_turn = not bd.whites_turn
-                            if bd.check():
-                                king_check = True
-                            bd.whites_turn = not bd.whites_turn
-                            bd.undo_move()
+                            if not made_move:
+                                clicks = [selected_square]
+                                bd.make_move(move)
+                                bd.whites_turn = not bd.whites_turn
+                                if bd.check():
+                                    king_check = True
+                                bd.whites_turn = not bd.whites_turn
+                                bd.undo_move()
                             
                     
             elif e.type == py.KEYDOWN: # Handles 'z' key being pressed, indicating the user wants to undo a move
