@@ -26,13 +26,13 @@ def load_initial_images():
 
 def main():
     py.init()
-    screen = py.display.set_mode((WIDTH, HEIGHT))
+    screen = py.display.set_mode((WIDTH * 1.3, HEIGHT))
     load_initial_images()
     py.display.set_caption('A Game of Chess')
     py.display.set_icon(ICON_IMAGES["Icon"])
     font = py.font.Font('freesansbold.ttf', 32)
     clock = py.time.Clock()
-    screen.fill(py.Color("white"))
+    screen.fill(py.Color("grey"))
     bd = board.Board()
     AI = bot.Bot()
     selected_square = ()
@@ -42,6 +42,7 @@ def main():
     made_move = False
     animate = False
     game_over = False
+    king_check = False
 
     while running: # Main gameplay loop
         
@@ -68,8 +69,17 @@ def main():
                                 animate = True
                                 selected_square = ()
                                 clicks = []
+                                king_check = False
+
                         if not made_move:
                             clicks = [selected_square]
+                            bd.make_move(move)
+                            bd.whites_turn = not bd.whites_turn
+                            if bd.check():
+                                king_check = True
+                            bd.whites_turn = not bd.whites_turn
+                            bd.undo_move()
+                            
                     
             elif e.type == py.KEYDOWN: # Handles 'z' key being pressed, indicating the user wants to undo a move
                 if e.key == py.K_z:
@@ -89,13 +99,12 @@ def main():
         if made_move:
             if animate:
                 animate_move(bd.move_log[-1], screen, bd, clock)
+                
             valid_moves = bd.get_valid_moves()
-            if bd.check():
-                print("Check")
             made_move = False
             animate = False
             
-        drawGame(screen, bd, selected_square)
+        drawGame(screen, bd, selected_square, king_check)
 
         # Check for checkmate
         if bd.checkmate:
@@ -114,32 +123,24 @@ def main():
         clock.tick(MAX_FPS)
         py.display.flip()
 
-def highlight(screen, bd, valid_moves, selected_square):
-    if selected_square != ():
-        row, col = selected_square
-        if bd.board_state[row][col][0] == ('w' if bd.whites_turn else 'b'):
-            square = py.Surface((SQUARE_SIZE, SQUARE_SIZE))
-            square.set_alpha(100)
-            square.fill(py.Color('#FFFF00'))
-            screen.blit(square, (col*SQUARE_SIZE, row*SQUARE_SIZE))
 
-            square.fill(py.Color('blue'))
-            for move in valid_moves:
-                if move.start_row == row and move.start_col == col:
-                    screen.blit(square, (move.end_col*SQUARE_SIZE, move.end_row*SQUARE_SIZE))
-
-def drawGame(screen, game, selected_square):
+def drawGame(screen, game, selected_square, king_check):
     '''
     Handles drawing of both board and pieces, and if a square is selected currently it draws that square also.
     '''
-    if selected_square != ():
+    king = game.white_king_loc if game.whites_turn else game.black_king_loc
+    if selected_square != () and king_check:
+        drawBoard(screen, selected_square, king)
+    elif king_check:
+        drawBoard(screen, None, king)
+    elif selected_square != ():
         drawBoard(screen, selected_square)
     else:
         drawBoard(screen)
 
     drawPieces(screen, game)
 
-def drawBoard(screen, selected=None):
+def drawBoard(screen, selected=None, king_check=None):
     '''
     Draws background board, and draws highlighted square if one is selected.
     '''
@@ -151,6 +152,9 @@ def drawBoard(screen, selected=None):
             py.draw.rect(screen, color, py.Rect(c*SQUARE_SIZE, r*SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
     if selected:
         py.draw.rect(screen, py.Color("#FFFF00"), py.Rect(selected[1]*SQUARE_SIZE, selected[0]*SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
+
+    if king_check:
+        py.draw.rect(screen, py.Color("#FF4242"), py.Rect(king_check[1]*SQUARE_SIZE, king_check[0]*SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
 
 def drawPieces(screen, game):
     '''

@@ -230,7 +230,6 @@ class Board():
             self.board_state[move.end_row][move.end_col] = move.moved_piece[0] + "Q"
         
         if move.enpassant_move:
-            print("Clearing a {}".format(self.board_state[move.start_row][move.end_col]))
             self.board_state[move.start_row][move.end_col] = "--"
 
         if move.moved_piece[1] == 'P' and abs(move.start_row - move.end_row) == 2:
