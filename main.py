@@ -22,10 +22,10 @@ def load_initial_images():
     '''
     pieces = ["wP", "wR", "wN", "wB", "wQ", "wK", "bQ", "bK", "bB", "bN", "bR", "bP"]
     for piece in pieces:
-        IMAGES_MAIN[piece] = py.transform.smoothscale(py.image.load("images/" + piece + ".png").convert_alpha(), (SQUARE_SIZE, SQUARE_SIZE))
+        IMAGES_MAIN[piece] = py.transform.smoothscale(py.image.load("resources/" + piece + ".png").convert_alpha(), (SQUARE_SIZE, SQUARE_SIZE))
         IMAGES_SMALL[piece] = py.transform.smoothscale(IMAGES_MAIN[piece], (SQUARE_SIZE // 2, SQUARE_SIZE // 2))
 
-    ICON_IMAGES["Icon"] = py.transform.scale(py.image.load("images/icon.png").convert_alpha(), (SQUARE_SIZE, SQUARE_SIZE))
+    ICON_IMAGES["Icon"] = py.transform.scale(py.image.load("resources/icon.png").convert_alpha(), (SQUARE_SIZE, SQUARE_SIZE))
 
 def draw_gui_elements(screen, font):
     label = "Captured Pieces"
@@ -45,7 +45,7 @@ def draw_gui_elements(screen, font):
 
 def main():
     py.init()
-    font = py.font.Font('freesansbold.ttf', WIDTH // 32)
+    font = py.font.Font('./resources/Roboto-Medium.ttf', WIDTH // 32)
     screen = py.display.set_mode((WIDTH * SIDE_BAR_MULTIPLIER, HEIGHT))
     load_initial_images()
     py.display.set_caption('Chess-Bot')
@@ -120,7 +120,6 @@ def main():
                     game_over = False
 
         if made_move:
-            print(bd.castle_moves.wks, bd.castle_moves.wqs, bd.castle_moves.bks, bd.castle_moves.bqs)
             if animate:
                 animate_move(bd.move_log[-1], screen, bd, clock)
                 
