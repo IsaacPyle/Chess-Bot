@@ -12,9 +12,18 @@ class Bot():
     def make_move(self, moves, board):
         # for move in moves:
         #     if board[move.end_row][move.end_col] != "--":
-
+        if len(moves) < 1:
+            return False
         random_move_index = random.randint(0, len(moves) - 1)
-        board.make_move(moves[random_move_index])
+        random_move = moves[random_move_index]
+        preferred_move = (0, random_move)
+        for move in moves:
+            if move.captured_piece[1] in self.piece_values and self.piece_values[move.captured_piece[1]] > preferred_move[0]:
+                preferred_move = (self.piece_values[move.captured_piece[1]], move)
+
+
+        # random_move_index = random.randint(0, len(moves) - 1)
+        board.make_move(moves[moves.index(preferred_move[1])])
         return board.get_valid_moves()
 
         

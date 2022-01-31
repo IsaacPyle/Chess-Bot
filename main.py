@@ -1,7 +1,6 @@
 import pygame as py
 from pygame.constants import CONTROLLERAXISMOTION
 import board
-import random
 import bot
 
 
@@ -9,7 +8,7 @@ WIDTH = HEIGHT = 512
 SIDE_BAR_MULTIPLIER = 1.3
 DIMENSION = 8
 SQUARE_SIZE = HEIGHT // DIMENSION
-MAX_FPS = 15
+MAX_FPS = 10
 ICON_IMAGES = {}
 IMAGES_MAIN = {}
 IMAGES_SMALL = {}
@@ -49,7 +48,7 @@ def main():
     font = py.font.Font('freesansbold.ttf', WIDTH // 32)
     screen = py.display.set_mode((WIDTH * SIDE_BAR_MULTIPLIER, HEIGHT))
     load_initial_images()
-    py.display.set_caption('A Game of Chess')
+    py.display.set_caption('Chess-Bot')
     py.display.set_icon(ICON_IMAGES["Icon"])
     clock = py.time.Clock()
     screen.fill(BACKGROUND)
@@ -66,10 +65,10 @@ def main():
     king_check = False
 
     while running: # Main gameplay loop
-        
         for e in py.event.get():
             if e.type == py.QUIT:
                 running = False
+            
             elif e.type == py.MOUSEBUTTONDOWN:
                 if not game_over:
                     loc = py.mouse.get_pos()
@@ -95,12 +94,13 @@ def main():
 
                             if not made_move:
                                 clicks = [selected_square]
-                                bd.make_move(move)
-                                bd.whites_turn = not bd.whites_turn
-                                if bd.check():
-                                    king_check = True
-                                bd.whites_turn = not bd.whites_turn
-                                bd.undo_move()
+                                if (move.moved_piece[0] == "w" and bd.whites_turn) or (move.moved_piece[0] == "b" and not bd.whites_turn):
+                                    bd.make_move(move)
+                                    bd.whites_turn = not bd.whites_turn
+                                    if bd.check():
+                                        king_check = True
+                                    bd.whites_turn = not bd.whites_turn
+                                    bd.undo_move()
                             
                     
             elif e.type == py.KEYDOWN: # Handles 'z' key being pressed, indicating the user wants to undo a move
@@ -120,12 +120,16 @@ def main():
                     game_over = False
 
         if made_move:
+            print(bd.castle_moves.wks, bd.castle_moves.wqs, bd.castle_moves.bks, bd.castle_moves.bqs)
             if animate:
                 animate_move(bd.move_log[-1], screen, bd, clock)
                 
             valid_moves = bd.get_valid_moves()
             made_move = False
             animate = False
+            makeAIMove(AI, valid_moves, bd, screen, clock)
+            valid_moves = bd.get_valid_moves()
+            
             
         drawGame(screen, bd, selected_square, king_check)
 
@@ -146,6 +150,13 @@ def main():
         clock.tick(MAX_FPS)
         py.display.flip()
 
+def makeAIMove(AI, moves, board, screen, clock):
+    moves = board.get_valid_moves()
+    new_moves = AI.make_move(moves, board)
+    moves = new_moves
+    py.time.wait(300)
+    animate_move(board.move_log[-1], screen, board, clock)
+    
 
 def drawGame(screen, game, selected_square, king_check):
     '''
@@ -162,7 +173,7 @@ def drawGame(screen, game, selected_square, king_check):
         drawBoard(screen)
 
     drawPieces(screen, game)
-    drawCaptured(screen, game)
+    drawSidebar(screen, game)
 
 def drawBoard(screen, selected=None, king_check=None):
     '''
@@ -193,7 +204,7 @@ def drawPieces(screen, game):
 
     # Here depending on further implementation we could invert the board when opponent's turn
 
-def drawCaptured(screen, game):
+def drawSidebar(screen, game):
     white_pieces = game.captured_white_pieces
     black_pieces = game.captured_black_pieces
     sidebar_size = WIDTH * 0.3
@@ -232,7 +243,7 @@ def animate_move(move, screen, board, clock):
     row_dist = move.end_row - move.start_row
     col_dist = move.end_col - move.start_col
     frames = 10
-    total_frames = frames + int((1.2 * abs(row_dist) + abs(col_dist)))# (abs(row_dist) + abs(col_dist)) * frames
+    total_frames = frames + int((1.2 * abs(row_dist) + abs(col_dist)))
 
 
     for frame in range(total_frames + 1):

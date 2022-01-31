@@ -20,7 +20,8 @@ class Board():
         self.move_functions = {"P": self.pawn_moves, "R": self.rook_moves, "B": self.bishop_moves, "N": self.knight_moves, "Q": self.queen_moves, "K": self.king_moves}
         self.white_king_loc = (7, 4)
         self.black_king_loc = (0, 4)
-        self.castle_moves = ()
+        self.castle_moves = Castles()
+        self.castles_log = [Castles(self.castle_moves.wks, self.castle_moves.wqs, self.castle_moves.bks, self.castle_moves.bqs)]
         self.enpassant = ()
         self.checkmate = False
         self.stalemate = False
@@ -34,7 +35,12 @@ class Board():
         to see if the king could be captured. Naive algorithm, and can be improved.
         '''
         temp_enpassant = self.enpassant
+        temp_castles = Castles(self.castle_moves.wks, self.castle_moves.wqs, self.castle_moves.bks, self.castle_moves.bqs)
         moves = self.get_all_moves()
+        if self.whites_turn:
+            self.get_castle_moves(self.white_king_loc[0], self.white_king_loc[1], moves)
+        else:
+            self.get_castle_moves(self.black_king_loc[0], self.black_king_loc[1], moves)
 
         for i in range(len(moves) - 1, -1, -1):
             self.make_move(moves[i])
@@ -45,6 +51,7 @@ class Board():
             self.undo_move()
 
         self.enpassant = temp_enpassant
+        self.castle_moves = temp_castles
 
         if len(moves) == 0:
             if self.check():
@@ -213,6 +220,33 @@ class Board():
                     moves.append(Move(self.board_state, (row, col), (new_row, new_col)))
 
 
+    def get_castle_moves(self, row, col, moves):
+        if self.check():
+            return
+
+        if self.whites_turn:
+            if self.castle_moves.wks:
+                if self.board_state[row][col+1] == "--" and self.board_state[row][col+2] == "--":
+                    if not self.piece_attacked(row, col+1) and not self.piece_attacked(row, col+2):
+                        moves.append(Move(self.board_state, (row, col), (row, col+2), castling=True))
+
+            if self.castle_moves.wqs:
+                if self.board_state[row][col-1] == "--" and self.board_state[row][col-2] == "--" and self.board_state[row][col-3]:
+                    if not self.piece_attacked(row, col-1) and not self.piece_attacked(row, col-2):
+                        moves.append(Move(self.board_state, (row, col), (row, col-2), castling=True))
+
+        elif not self.whites_turn:
+            if self.castle_moves.bks:
+                if self.board_state[row][col+1] == "--" and self.board_state[row][col+2] == "--":
+                    if not self.piece_attacked(row, col+1) and not self.piece_attacked(row, col+2):
+                        moves.append(Move(self.board_state, (row, col), (row, col+2), castling=True))
+
+            if self.castle_moves.bqs:
+                if self.board_state[row][col-1] == "--" and self.board_state[row][col-2] == "--" and self.board_state[row][col-3]:
+                    if not self.piece_attacked(row, col-1) and not self.piece_attacked(row, col-2):
+                        moves.append(Move(self.board_state, (row, col), (row, col-2), castling=True))
+
+
     def make_move(self, move):
         '''
         Takes a move, updates the board_state and king location variables, inverts whites_turn variable, 
@@ -246,7 +280,17 @@ class Board():
             elif move.captured_piece[0] == "b":
                 self.captured_black_pieces.append(move.captured_piece)
 
+        if move.castle_move:
+            if move.end_col - move.start_col == 2:
+                self.board_state[move.end_row][move.end_col-1] = self.board_state[move.end_row][move.end_col+1]
+                self.board_state[move.end_row][move.end_col+1] = "--"
 
+            else:
+                self.board_state[move.end_row][move.end_col+1] = self.board_state[move.end_row][move.end_col-2]
+                self.board_state[move.end_row][move.end_col-2] = "--"
+
+        self.updateCastles(move)
+        self.castles_log.append(Castles(self.castle_moves.wks, self.castle_moves.wqs, self.castle_moves.bks, self.castle_moves.bqs))
 
 
     def undo_move(self):
@@ -280,6 +324,57 @@ class Board():
                 elif prev_move.captured_piece[0] == "b":
                     self.captured_black_pieces.pop()
 
+            self.castles_log.pop()
+            current_castles = self.castles_log[-1]
+            self.castle_moves = Castles(current_castles.wks, current_castles.wqs, current_castles.bks, current_castles.bqs)
+
+            if prev_move.castle_move:
+                if prev_move.end_col - prev_move.start_col == 2:
+                    self.board_state[prev_move.end_row][prev_move.end_col + 1] = self.board_state[prev_move.end_row][prev_move.end_col - 1]
+                    self.board_state[prev_move.end_row][prev_move.end_col - 1] = "--"
+                else:
+                    self.board_state[prev_move.end_row][prev_move.end_col - 2] = self.board_state[prev_move.end_row][prev_move.end_col + 1]
+                    self.board_state[prev_move.end_row][prev_move.end_col + 1] = "--"
+
+    def updateCastles(self, move):
+        if move.moved_piece == "wK":
+            self.castle_moves.wks = False
+            self.castle_moves.wqs = False
+        elif move.moved_piece == "bK":
+            self.castle_moves.bks = False
+            self.castle_moves.bqs = False
+        elif move.moved_piece == "wR":
+            if move.start_row == 7:
+                if move.start_col == 0:
+                    self.castle_moves.wqs = False
+                elif move.start_col == 7:
+                    self.castle_moves.wks = False
+        elif move.moved_piece == "bR":
+            if move.start_row == 0:
+                if move.start_col == 0:
+                    self.castle_moves.bqs = False
+                elif move.start_col == 7:
+                    self.castle_moves.bks = False
+        elif move.captured_piece[1] == "R":
+            if move.end_row == 7:
+                if move.end_col == 0:
+                    self.castle_moves.wqs = False
+                elif move.end_col == 7:
+                    self.castle_moves.wks = False
+            elif move.end_row == 0:
+                if move.end_col == 0:
+                    self.castle_moves.bqs = False
+                elif move.end_col == 7:
+                    self.castle_moves.bks = False
+
+
+class Castles():
+    def __init__(self, wks=True, wqs=True, bks=True, bqs=True):
+        self.wks = wks
+        self.wqs = wqs
+        self.bks = bks
+        self.bqs = bks
+
 
 class Move():
     '''
@@ -287,7 +382,7 @@ class Move():
     Saves the piece that was moved and the piece that was captured ('--' if ending location was empty).
 
     '''
-    def __init__(self, board, start, end, enpassant_possible=False):
+    def __init__(self, board, start, end, enpassant_possible=False, castling=False):
         self.start_row = start[0]
         self.start_col = start[1]
         self.end_row = end[0]
@@ -300,6 +395,9 @@ class Move():
         self.enpassant_move = enpassant_possible
         if self.enpassant_move:
             self.captured_piece = 'wP' if self.moved_piece == 'bP' else 'bP'
+
+        self.castle_move = castling
+
 
     def check_eq(self, other_move):
         '''
