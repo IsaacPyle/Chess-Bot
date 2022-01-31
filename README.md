@@ -34,7 +34,7 @@ Thus, my ideas are:
 
 * ~~Fix known bugs (en passant in particular)~~ Done
 * Add game end screen <-- Added text, need to add more functionality
-* Add castling functionality
+* ~~Add castling functionality~~ Done
 * Implement basic AI player (checking 1-2 moves into the future?)
 * Implement more advanced AI player (using minimax / Alpha-Beta pruning)
 * Flippable board to see from Player 2's perspective
