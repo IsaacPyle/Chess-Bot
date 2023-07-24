@@ -126,7 +126,8 @@ def main():
             valid_moves = bd.get_valid_moves()
             made_move = False
             animate = False
-            makeAIMove(AI, valid_moves, bd, screen, clock)
+            if len(valid_moves) != 0:
+                makeAIMove(AI, valid_moves, bd, screen, clock)
             valid_moves = bd.get_valid_moves()
             
             
@@ -135,6 +136,8 @@ def main():
         # Check for checkmate
         if bd.checkmate:
             game_over = True
+            made_move = False
+            animate = False
             if bd.whites_turn:
                 drawText(screen, "Black wins!")
             else:

@@ -111,12 +111,12 @@ class Board():
                 if self.board_state[row-1][col-1][0] == "b":
                     moves.append(Move(self.board_state, (row, col), (row-1, col-1)))
                 elif (row-1, col-1) == self.enpassant:
-                    moves.append(Move(self.board_state, (row, col), (row-1, col-1), True))
+                    moves.append(Move(self.board_state, (row, col), (row-1, col-1), enpassant_possible=True))
             if col < 7:
                 if self.board_state[row-1][col+1][0] == "b":
                     moves.append(Move(self.board_state, (row, col), (row-1, col+1)))
                 elif (row-1, col+1) == self.enpassant:
-                    moves.append(Move(self.board_state, (row, col), (row-1, col+1), True))
+                    moves.append(Move(self.board_state, (row, col), (row-1, col+1), enpassant_possible=True))
         else:
             if self.board_state[row+1][col] == "--":
                 moves.append(Move(self.board_state, (row, col), (row+1, col)))
@@ -126,12 +126,12 @@ class Board():
                 if self.board_state[row+1][col-1][0] == "w":
                     moves.append(Move(self.board_state, (row, col), (row+1, col-1)))
                 elif (row+1, col-1) == self.enpassant:
-                    moves.append(Move(self.board_state, (row, col), (row+1, col-1), True))
+                    moves.append(Move(self.board_state, (row, col), (row+1, col-1), enpassant_possible=True))
             if col < 7:
                 if self.board_state[row+1][col+1][0] == "w":
                     moves.append(Move(self.board_state, (row, col), (row+1, col+1)))
                 elif (row+1, col+1) == self.enpassant:
-                    moves.append(Move(self.board_state, (row, col), (row+1, col+1), True))
+                    moves.append(Move(self.board_state, (row, col), (row+1, col+1), enpassant_possible=True))
 
     def rook_moves(self, row, col, moves):
         '''
