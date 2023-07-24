@@ -163,18 +163,18 @@ def drawGame(screen, game, selected_square, king_check):
     '''
     king = game.white_king_loc if game.whites_turn else game.black_king_loc
     if selected_square != () and king_check:
-        drawBoard(screen, selected_square, king)
+        drawBoard(game, screen, selected_square, king)
     elif king_check:
-        drawBoard(screen, None, king)
+        drawBoard(game, screen, None, king)
     elif selected_square != ():
-        drawBoard(screen, selected_square)
+        drawBoard(game, screen, selected_square)
     else:
-        drawBoard(screen)
+        drawBoard(game, screen)
 
     drawPieces(screen, game)
     drawSidebar(screen, game)
 
-def drawBoard(screen, selected=None, king_check=None):
+def drawBoard(game, screen, selected=None, king_check=None):
     '''
     Draws background board, and draws highlighted square if one is selected.
     '''
@@ -184,8 +184,12 @@ def drawBoard(screen, selected=None, king_check=None):
         for c in range(DIMENSION):
             color = colors[(r+c) % 2] 
             py.draw.rect(screen, color, py.Rect(c*SQUARE_SIZE, r*SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
+
     if selected:
         py.draw.rect(screen, py.Color("#FFFF00"), py.Rect(selected[1]*SQUARE_SIZE, selected[0]*SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
+        # for move in game.get_valid_moves(): # <-- Possible way to highlight potential moves.
+        #     if move.start_row == selected[1] and move.start_col == selected[0]:
+        #         py.draw.rect(screen, py.Color("#FFFF00"), py.Rect(move.start_col*SQUARE_SIZE, move.start_row*SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
 
     if king_check:
         py.draw.rect(screen, py.Color("#FF4242"), py.Rect(king_check[1]*SQUARE_SIZE, king_check[0]*SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
@@ -247,7 +251,7 @@ def animate_move(move, screen, board, clock):
 
     for frame in range(total_frames + 1):
         row, col = (move.start_row + row_dist*frame/total_frames, move.start_col+ col_dist*frame/total_frames)
-        drawBoard(screen)
+        drawBoard(board, screen)
         drawPieces(screen, board)
         color = colors[(move.end_row + move.end_col) % 2]
         end_square = py.Rect(move.end_col*SQUARE_SIZE, move.end_row * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE)

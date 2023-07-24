@@ -231,7 +231,7 @@ class Board():
                         moves.append(Move(self.board_state, (row, col), (row, col+2), castling=True))
 
             if self.castle_moves.wqs:
-                if self.board_state[row][col-1] == "--" and self.board_state[row][col-2] == "--" and self.board_state[row][col-3]:
+                if self.board_state[row][col-1] == "--" and self.board_state[row][col-2] == "--" and self.board_state[row][col-3] == "--":
                     if not self.piece_attacked(row, col-1) and not self.piece_attacked(row, col-2):
                         moves.append(Move(self.board_state, (row, col), (row, col-2), castling=True))
 
@@ -242,7 +242,7 @@ class Board():
                         moves.append(Move(self.board_state, (row, col), (row, col+2), castling=True))
 
             if self.castle_moves.bqs:
-                if self.board_state[row][col-1] == "--" and self.board_state[row][col-2] == "--" and self.board_state[row][col-3]:
+                if self.board_state[row][col-1] == "--" and self.board_state[row][col-2] == "--" and self.board_state[row][col-3] == "--":
                     if not self.piece_attacked(row, col-1) and not self.piece_attacked(row, col-2):
                         moves.append(Move(self.board_state, (row, col), (row, col-2), castling=True))
 
@@ -373,7 +373,7 @@ class Castles():
         self.wks = wks
         self.wqs = wqs
         self.bks = bks
-        self.bqs = bks
+        self.bqs = bqs
 
 
 class Move():
