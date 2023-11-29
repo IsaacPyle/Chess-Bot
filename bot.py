@@ -26,4 +26,3 @@ class Bot():
         board.make_move(moves[moves.index(preferred_move[1])])
         return board.get_valid_moves()
 
-        

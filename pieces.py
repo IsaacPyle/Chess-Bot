@@ -1,5 +1,7 @@
 from board import Move, Board
+from dataclasses import dataclass
 
+@dataclass
 class Piece:
     def __init__(self) -> None:
         pass
@@ -7,18 +9,17 @@ class Piece:
     def move():
         return
 
+@dataclass
 class Pawn(Piece):
-    def __init__(self, name, pos, color):
-        self.name = name
-        self.color = color
-        self.current_pos = pos
-        self.moves = [(0, 1), (0, 2)]
-        self.attacks = [(1, 1), (-1, 1)]
+    name: str
+    color: str
+    current_pos: tuple
+    moves = [(0, 1), (0, 2)]
+    attacks = [(1, 1), (-1, 1)]
 
     def get_moves(self, moves):
         row = self.current_pos[0]
         col = self.current_pos[1]
-
 
         if self.whites_turn:
             if Board.board_state[row-1][col] == "--":
@@ -51,45 +52,45 @@ class Pawn(Piece):
                 elif (row+1, col+1) == self.enpassant:
                     moves.append(Move(Board.board_state, (row, col), (row+1, col+1), True))
 
-class Rook:
-    def __init__(self, name, pos, color):
-        self.name = name
-        self.color = color
-        self.current_pos = pos
-        self.moves = ["h", "v"]
-        self.attacks = ["h", "v"]
+@dataclass
+class Rook(Piece):
+    name: str
+    color: str
+    current_pos: str
+    moves = ["h", "v"]
+    attacks = ["h", "v"]
 
-class Knight:
-    def __init__(self, name, pos, color):
-        self.name = name
-        self.color = color
-        self.current_pos = pos
-        self.moves = [(-2, 1), (-2,-1), (-1, 2), (1, 2), (2, 1), (2, -1), (1, -2), (-1, -2)]
-        self.attacks = [(-2, 1), (-2,-1), (-1, 2), (1, 2), (2, 1), (2, -1), (1, -2), (-1, -2)]
+@dataclass
+class Knight(Piece):
+    name: str
+    color: str
+    current_pos: str
+    moves = [(-2, 1), (-2,-1), (-1, 2), (1, 2), (2, 1), (2, -1), (1, -2), (-1, -2)]
+    attacks = [(-2, 1), (-2,-1), (-1, 2), (1, 2), (2, 1), (2, -1), (1, -2), (-1, -2)]
 
-class Bishop:
-    def __init__(self, name, pos, color):
-        self.name = name
-        self.color = color
-        self.current_pos = pos
-        self.moves = ["d"]
-        self.attacks = ["d"]
+@dataclass
+class Bishop(Piece):
+    name: str
+    color: str
+    current_pos: str
+    moves = ["d"]
+    attacks = ["d"]
 
-class Queen:
-    def __init__(self, name, pos, color):
-        self.name = name
-        self.color = color
-        self.current_pos = pos
-        self.moves = ["h", "d", "v"]
-        self.attacks = ["h", "d", "v"]
+@dataclass
+class Queen(Piece):
+    name: str
+    color: str
+    current_pos: str
+    moves = ["h", "d", "v"]
+    attacks = ["h", "d", "v"]
 
-class King:
-    def __init__(self, name, pos, color):
-        self.name = name
-        self.color = color
-        self.current_pos = pos
-        self.moves = [(-1, 0), (-1, 1), (0, 1), (1, 1), (1, 0), (1, -1), (0, -1), (-1, -1)]
-        self.attacks = [(-1, 0), (-1, 1), (0, 1), (1, 1), (1, 0), (1, -1), (0, -1), (-1, -1)]
+@dataclass
+class King(Piece):
+    name: str
+    color: str
+    current_pos: str
+    moves = [(-1, 0), (-1, 1), (0, 1), (1, 1), (1, 0), (1, -1), (0, -1), (-1, -1)]
+    attacks = [(-1, 0), (-1, 1), (0, 1), (1, 1), (1, 0), (1, -1), (0, -1), (-1, -1)]
 
 
 

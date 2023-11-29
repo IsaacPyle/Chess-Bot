@@ -1,10 +1,11 @@
+from pieces import *
 import pieces
 
 class Player:
     def __init__(self):
         self.opponent_pieces = []
 
-    def get_piece(self, this_piece):
+    def get_piece(self, this_piece) -> Piece:
         for piece in pieces:
             if piece.name == this_piece:
                 return piece
