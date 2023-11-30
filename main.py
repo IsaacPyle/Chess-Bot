@@ -1,6 +1,8 @@
 import pygame as py
+from pygame import *
 from pygame.constants import CONTROLLERAXISMOTION
 import board
+from board import *
 import bot
 
 
@@ -103,7 +105,7 @@ def main():
                                     bd.undo_move()
                             
                     
-            elif e.type == py.KEYDOWN: # Handles 'z' key being pressed, indicating the user wants to undo a move
+            elif e.type == py.KEYDOWN: # Handles 'z' or 'r' keys being pressed, indicating the user wants to undo or reset a move
                 if e.key == py.K_z:
                     bd.undo_move()
                     valid_moves = bd.get_valid_moves()
@@ -152,7 +154,7 @@ def main():
         clock.tick(MAX_FPS)
         py.display.flip()
 
-def makeAIMove(AI, moves, board, screen, clock):
+def makeAIMove(AI: Bot, moves: list, board, screen, clock):
     moves = board.get_valid_moves()
     new_moves = AI.make_move(moves, board)
     moves = new_moves
@@ -160,15 +162,15 @@ def makeAIMove(AI, moves, board, screen, clock):
     animate_move(board.move_log[-1], screen, board, clock)
     
 
-def drawGame(screen, game, selected_square, king_check):
+def drawGame(screen: Surface, game: Board, selected_square: tuple, king_check: bool):
     '''
     Handles drawing of both board and pieces, and if a square is selected currently it draws that square also.
     '''
-    king = game.white_king_loc if game.whites_turn else game.black_king_loc
+    king_loc = game.white_king_loc if game.whites_turn else game.black_king_loc
     if selected_square != () and king_check:
-        drawBoard(game, screen, selected_square, king)
+        drawBoard(game, screen, selected_square, king_loc)
     elif king_check:
-        drawBoard(game, screen, None, king)
+        drawBoard(game, screen, None, king_loc)
     elif selected_square != ():
         drawBoard(game, screen, selected_square)
     else:
@@ -177,7 +179,7 @@ def drawGame(screen, game, selected_square, king_check):
     drawPieces(screen, game)
     drawSidebar(screen, game)
 
-def drawBoard(game, screen, selected=None, king_check=None):
+def drawBoard(game: Board, screen: Surface, selected: tuple([int, int]) = None, king_loc: tuple = None):
     '''
     Draws background board, and draws highlighted square if one is selected.
     '''
@@ -194,10 +196,10 @@ def drawBoard(game, screen, selected=None, king_check=None):
         #     if move.start_row == selected[1] and move.start_col == selected[0]:
         #         py.draw.rect(screen, py.Color("#FFFF00"), py.Rect(move.start_col*SQUARE_SIZE, move.start_row*SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
 
-    if king_check:
-        py.draw.rect(screen, py.Color("#FF4242"), py.Rect(king_check[1]*SQUARE_SIZE, king_check[0]*SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
+    if king_loc:
+        py.draw.rect(screen, py.Color("#FF4242"), py.Rect(king_loc[1]*SQUARE_SIZE, king_loc[0]*SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE))
 
-def drawPieces(screen, game):
+def drawPieces(screen: Surface, game: Board):
     '''
     Draws each piece individually to the board after the background board has been drawn 
     '''
@@ -210,7 +212,7 @@ def drawPieces(screen, game):
 
     # Here depending on further implementation we could invert the board when opponent's turn
 
-def drawSidebar(screen, game):
+def drawSidebar(screen: Surface, game: Board):
     white_pieces = game.captured_white_pieces
     black_pieces = game.captured_black_pieces
     sidebar_size = WIDTH * 0.3
@@ -244,7 +246,7 @@ def drawSidebar(screen, game):
         py.draw.rect(screen, BACKGROUND, py.Rect(WIDTH, HEIGHT * .75, WIDTH * (SIDE_BAR_MULTIPLIER - 1), HEIGHT // 4))
 
 
-def animate_move(move, screen, board, clock):
+def animate_move(move: Move, screen: Surface, board: Board, clock):
     global colors
     row_dist = move.end_row - move.start_row
     col_dist = move.end_col - move.start_col
@@ -266,7 +268,7 @@ def animate_move(move, screen, board, clock):
         clock.tick(60)
         py.display.flip()
 
-def drawText(screen, text):
+def drawText(screen: Surface, text: str):
     font = py.font.SysFont('Helvetica', 32, True, False)
     obj = font.render(text, 0, py.Color('Grey'))
     location = py.Rect(0, 0, WIDTH, HEIGHT).move(WIDTH/2 - obj.get_width()/2, HEIGHT/2 - obj.get_height()/2)
