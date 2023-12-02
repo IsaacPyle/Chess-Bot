@@ -18,6 +18,9 @@ class Bot():
         # preferred_move = (0, self.getRandomMove(moves))
         values = self.getNextMoveValues(moves)
         bestAndValue = self.getBestMove(values, board)
+        print(bestAndValue[1])
+        if bestAndValue[1] == None:
+            return
         print(bestAndValue[0], bestAndValue[1].captured_piece)
         best = bestAndValue[1]
 
@@ -60,16 +63,13 @@ class Bot():
             
             move = list(move)
             move[0] -= bestNextVal
-            # Recurse, getting the best move for 
-            # best = self.getBestMove(validMoves, board, depth - 1)
-            # if best[1]:
-            #     move[0] += best[0]
             options.append(move)
 
             board.undo_move()
             self.resetBoardVars(board)
+
         bestMoves = list(filter(lambda f: f == max(options, key = lambda x : x[0]), options))
-        print("Begin options: \n", bestMoves, "\nEnd options")
+        # print("Begin options: \n", bestMoves, "\nEnd options")
         return random.choice(bestMoves)
     
     def saveBoard(self, board: Board):

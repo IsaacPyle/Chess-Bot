@@ -1,6 +1,46 @@
 from dataclasses import dataclass
 from typing import List
 
+@dataclass
+class Move():
+    '''
+    Initializes with the current board state, a starting location, and an ending location. 
+    Saves the piece that was moved and the piece that was captured ('--' if ending location was empty).
+    '''
+    board: list
+    start: tuple
+    end: tuple
+    enpassant_possible: bool = False
+    castling: bool = False
+
+    def __post_init__(self):
+        self.start_row, self.start_col = self.start
+        self.end_row, self.end_col = self.end
+        self.moved_piece = self.board[self.start_row][self.start_col]
+        self.captured_piece = self.board[self.end_row][self.end_col]
+        self.pawn_promotion = (self.moved_piece == "wP" and self.end_row == 0) or (self.moved_piece == "bP" and self.end_row == 7)
+        self.player_moved = True if self.captured_piece != "--" else False
+
+        if self.enpassant_possible:
+            self.captured_piece = 'wP' if self.moved_piece == 'bP' else 'bP'
+
+    def check_eq(self, other_move):
+        '''
+        Confirms that moves are the same, which is needed since we create moves to check against that 
+        are different in memory but the same on the board.
+        '''
+        first = self.start_col * 1000 + self.start_row * 100 + self.end_row * 10 + self.end_col
+        second = other_move.start_col * 1000 + other_move.start_row * 100 + other_move.end_row * 10 + other_move.end_col
+        return first == second
+
+    def get_chess_notation(self, row, col):
+        '''
+        Converts (row, col) to chess notation which is 'File-Rank', so moving from the 
+        first row first column to the third row first column would be 'a1' to 'a3'.
+        '''
+        letters = "hgfedcba"
+        return letters[7-col] + str(8-row)
+
 class Board():
     '''
     Stores all information regarding current and starting board state, and handles generating possible moves for each piece. 
@@ -100,7 +140,7 @@ class Board():
                 return True
         return False
 
-    def pawn_moves(self, row, col, moves):
+    def pawn_moves(self, row, col, moves: List[Move]):
         '''
         Gets all possible moves for the pawn at (row, col) in the board_state, including captures and regular movement.
         Does not handle en passant or pawn promotion.
@@ -136,7 +176,7 @@ class Board():
                 elif (row+1, col+1) == self.enpassant:
                     moves.append(Move(self.board_state, (row, col), (row+1, col+1), enpassant_possible=True))
 
-    def rook_moves(self, row, col, moves):
+    def rook_moves(self, row, col, moves: List[Move]):
         '''
         Gets all possible moves for the rook at (row, col) in the board_state, including captures and regular movement.
         '''
@@ -159,7 +199,7 @@ class Board():
                 else:
                     break
 
-    def knight_moves(self, row, col, moves):
+    def knight_moves(self, row, col, moves: List[Move]):
         '''
         Gets all possible moves for the knight at (row, col) in the board_state, including captures and regular movement.
         '''
@@ -175,7 +215,7 @@ class Board():
                     moves.append(Move(self.board_state, (row, col), (new_row, new_col)))
 
 
-    def bishop_moves(self, row, col, moves):
+    def bishop_moves(self, row, col, moves: List[Move]):
         '''
         Gets all possible moves for the bishop at (row, col) in the board_state, including captures and regular movement.
         '''
@@ -198,7 +238,7 @@ class Board():
                 else:
                     break
 
-    def queen_moves(self, row, col, moves):
+    def queen_moves(self, row, col, moves: List[Move]):
         '''
         Gets all possible moves for the queen at (row, col) in the board_state, including captures and regular movement.
         Because the queen acts as a bishop and a rook combined, their logic is used to generate possible moves for the queen.
@@ -207,7 +247,7 @@ class Board():
         self.rook_moves(row, col, moves)
 
 
-    def king_moves(self, row, col, moves):
+    def king_moves(self, row, col, moves: List[Move]):
         '''
         Gets all possible moves for the king at (row, col) in the board_state, including captures and regular movement.
         '''
@@ -223,7 +263,7 @@ class Board():
                     moves.append(Move(self.board_state, (row, col), (new_row, new_col)))
 
 
-    def get_castle_moves(self, row, col, moves):
+    def get_castle_moves(self, row, col, moves: List[Move]):
         if self.check():
             return
 
@@ -250,7 +290,7 @@ class Board():
                         moves.append(Move(self.board_state, (row, col), (row, col-2), castling=True))
 
 
-    def make_move(self, move):
+    def make_move(self, move: Move):
         '''
         Takes a move, updates the board_state and king location variables, inverts whites_turn variable, 
         and appends the move to move_log.
@@ -339,7 +379,7 @@ class Board():
                     self.board_state[prev_move.end_row][prev_move.end_col - 2] = self.board_state[prev_move.end_row][prev_move.end_col + 1]
                     self.board_state[prev_move.end_row][prev_move.end_col + 1] = "--"
 
-    def updateCastles(self, move):
+    def updateCastles(self, move: Move):
         if move.moved_piece == "wK":
             self.castle_moves.wks = False
             self.castle_moves.wqs = False
@@ -377,46 +417,6 @@ class Castles():
         self.wqs = wqs
         self.bks = bks
         self.bqs = bqs
-
-@dataclass
-class Move():
-    '''
-    Initializes with the current board state, a starting location, and an ending location. 
-    Saves the piece that was moved and the piece that was captured ('--' if ending location was empty).
-    '''
-    board: list
-    start: tuple
-    end: tuple
-    enpassant_possible: bool = False
-    castling: bool = False
-
-    def __post_init__(self):
-        self.start_row, self.start_col = self.start
-        self.end_row, self.end_col = self.end
-        self.moved_piece = self.board[self.start_row][self.start_col]
-        self.captured_piece = self.board[self.end_row][self.end_col]
-        self.pawn_promotion = (self.moved_piece == "wP" and self.end_row == 0) or (self.moved_piece == "bP" and self.end_row == 7)
-        self.player_moved = True if self.captured_piece != "--" else False
-
-        if self.enpassant_possible:
-            self.captured_piece = 'wP' if self.moved_piece == 'bP' else 'bP'
-
-    def check_eq(self, other_move):
-        '''
-        Confirms that moves are the same, which is needed since we create moves to check against that 
-        are different in memory but the same on the board.
-        '''
-        first = self.start_col * 1000 + self.start_row * 100 + self.end_row * 10 + self.end_col
-        second = other_move.start_col * 1000 + other_move.start_row * 100 + other_move.end_row * 10 + other_move.end_col
-        return first == second
-
-    def get_chess_notation(self, row, col):
-        '''
-        Converts (row, col) to chess notation which is 'File-Rank', so moving from the 
-        first row first column to the third row first column would be 'a1' to 'a3'.
-        '''
-        letters = "hgfedcba"
-        return letters[7-col] + str(8-row)
 
     
 
