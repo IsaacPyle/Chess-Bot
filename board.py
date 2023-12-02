@@ -1,3 +1,6 @@
+from dataclasses import dataclass
+from typing import List
+
 class Board():
     '''
     Stores all information regarding current and starting board state, and handles generating possible moves for each piece. 
@@ -5,7 +8,7 @@ class Board():
     '''
     def __init__(self):
         self.whites_turn = True
-        self.move_log = []
+        self.move_log: List[Move] = []
         self.initial_state = [
             ["bR", "bN", "bB", "bQ", "bK", "bB", "bN", "bR"],
             ["bP", "bP", "bP", "bP", "bP", "bP", "bP", "bP"],
@@ -61,7 +64,7 @@ class Board():
 
         return moves
 
-    def get_all_moves(self):
+    def get_all_moves(self) -> List:
         '''
         Gets all moves possible for the current board state.
         '''
@@ -75,7 +78,7 @@ class Board():
                         self.move_functions[piece](row, col, moves)
         return moves
 
-    def check(self):
+    def check(self) -> bool:
         '''
         Checks if the current player's king is being attacked by any enemy piece, using the "piece_attacked" method 
         '''
@@ -265,7 +268,7 @@ class Board():
         if move.pawn_promotion:
             self.board_state[move.end_row][move.end_col] = move.moved_piece[0] + "Q"
         
-        if move.enpassant_move:
+        if move.enpassant_possible:
             self.board_state[move.start_row][move.end_col] = "--"
 
         if move.moved_piece[1] == 'P' and abs(move.start_row - move.end_row) == 2:
@@ -280,7 +283,7 @@ class Board():
             elif move.captured_piece[0] == "b":
                 self.captured_black_pieces.append(move.captured_piece)
 
-        if move.castle_move:
+        if move.castling:
             if move.end_col - move.start_col == 2:
                 self.board_state[move.end_row][move.end_col-1] = self.board_state[move.end_row][move.end_col+1]
                 self.board_state[move.end_row][move.end_col+1] = "--"
@@ -309,7 +312,7 @@ class Board():
             elif prev_move.moved_piece == "bK":
                 self.black_king_loc = (prev_move.start_row, prev_move.start_col)
 
-            if prev_move.enpassant_move:
+            if prev_move.enpassant_possible:
                 self.board_state[prev_move.end_row][prev_move.end_col] = "--"
                 self.board_state[prev_move.start_row][prev_move.end_col] = prev_move.captured_piece
                 self.enpassant = (prev_move.end_row, prev_move.end_col)
@@ -328,7 +331,7 @@ class Board():
             current_castles = self.castles_log[-1]
             self.castle_moves = Castles(current_castles.wks, current_castles.wqs, current_castles.bks, current_castles.bqs)
 
-            if prev_move.castle_move:
+            if prev_move.castling:
                 if prev_move.end_col - prev_move.start_col == 2:
                     self.board_state[prev_move.end_row][prev_move.end_col + 1] = self.board_state[prev_move.end_row][prev_move.end_col - 1]
                     self.board_state[prev_move.end_row][prev_move.end_col - 1] = "--"
@@ -375,29 +378,28 @@ class Castles():
         self.bks = bks
         self.bqs = bqs
 
-
+@dataclass
 class Move():
     '''
     Initializes with the current board state, a starting location, and an ending location. 
     Saves the piece that was moved and the piece that was captured ('--' if ending location was empty).
-
     '''
-    def __init__(self, board, start, end, enpassant_possible=False, castling=False):
-        self.start_row = start[0]
-        self.start_col = start[1]
-        self.end_row = end[0]
-        self.end_col = end[1]
-        self.moved_piece = board[self.start_row][self.start_col]
-        self.captured_piece = board[self.end_row][self.end_col]
+    board: list
+    start: tuple
+    end: tuple
+    enpassant_possible: bool = False
+    castling: bool = False
+
+    def __post_init__(self):
+        self.start_row, self.start_col = self.start
+        self.end_row, self.end_col = self.end
+        self.moved_piece = self.board[self.start_row][self.start_col]
+        self.captured_piece = self.board[self.end_row][self.end_col]
         self.pawn_promotion = (self.moved_piece == "wP" and self.end_row == 0) or (self.moved_piece == "bP" and self.end_row == 7)
         self.player_moved = True if self.captured_piece != "--" else False
 
-        self.enpassant_move = enpassant_possible
-        if self.enpassant_move:
+        if self.enpassant_possible:
             self.captured_piece = 'wP' if self.moved_piece == 'bP' else 'bP'
-
-        self.castle_move = castling
-
 
     def check_eq(self, other_move):
         '''

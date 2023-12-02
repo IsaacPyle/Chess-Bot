@@ -1,9 +1,12 @@
+from typing import List
 import pygame as py
 from pygame import *
+from pygame.time import Clock
 from pygame.constants import CONTROLLERAXISMOTION
 import board
 from board import *
 import bot
+from bot import Bot
 
 
 WIDTH = HEIGHT = 512
@@ -137,6 +140,8 @@ def main():
 
         # Check for checkmate
         if bd.checkmate:
+            # for row in bd.board_state:
+            #     print(row)
             game_over = True
             made_move = False
             animate = False
@@ -154,14 +159,13 @@ def main():
         clock.tick(MAX_FPS)
         py.display.flip()
 
-def makeAIMove(AI: Bot, moves: list, board, screen, clock):
+def makeAIMove(AI: Bot, moves: List[Move], board: Board, screen, clock: Clock):
     moves = board.get_valid_moves()
-    new_moves = AI.make_move(moves, board)
-    moves = new_moves
+    # print(AI.getBestMove(moves, board))
     py.time.wait(300)
+    AI.make_move(moves, board)
     animate_move(board.move_log[-1], screen, board, clock)
     
-
 def drawGame(screen: Surface, game: Board, selected_square: tuple, king_check: bool):
     '''
     Handles drawing of both board and pieces, and if a square is selected currently it draws that square also.
@@ -246,7 +250,7 @@ def drawSidebar(screen: Surface, game: Board):
         py.draw.rect(screen, BACKGROUND, py.Rect(WIDTH, HEIGHT * .75, WIDTH * (SIDE_BAR_MULTIPLIER - 1), HEIGHT // 4))
 
 
-def animate_move(move: Move, screen: Surface, board: Board, clock):
+def animate_move(move: Move, screen: Surface, board: Board, clock: Clock):
     global colors
     row_dist = move.end_row - move.start_row
     col_dist = move.end_col - move.start_col

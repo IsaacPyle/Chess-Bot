@@ -17,41 +17,6 @@ class Pawn(Piece):
     moves = [(0, 1), (0, 2)]
     attacks = [(1, 1), (-1, 1)]
 
-    def get_moves(self, moves):
-        row = self.current_pos[0]
-        col = self.current_pos[1]
-
-        if self.whites_turn:
-            if Board.board_state[row-1][col] == "--":
-                moves.append(Move(Board.board_state, (row, col), (row-1, col)))
-                if row == 6 and Board.board_state[row-2][col] == "--":
-                    moves.append(Move(Board.board_state, (row, col), (row-2, col)))
-            if col > 0:
-                if Board.board_state[row-1][col-1][0] == "b":
-                    moves.append(Move(Board.board_state, (row, col), (row-1, col-1)))
-                elif (row-1, col-1) == Board.enpassant:
-                    moves.append(Move(Board.board_state, (row, col), (row-1, col-1), True))
-            if col < 7:
-                if Board.board_state[row-1][col+1][0] == "b":
-                    moves.append(Move(Board.board_state, (row, col), (row-1, col+1)))
-                elif (row-1, col+1) == self.enpassant:
-                    moves.append(Move(Board.board_state, (row, col), (row-1, col+1), True))
-        else:
-            if Board.board_state[row+1][col] == "--":
-                moves.append(Move(Board.board_state, (row, col), (row+1, col)))
-                if row == 1 and Board.board_state[row+2][col] == "--":
-                    moves.append(Move(Board.board_state, (row, col), (row+2, col)))
-            if col > 0:
-                if Board.board_state[row+1][col-1][0] == "w":
-                    moves.append(Move(Board.board_state, (row, col), (row+1, col-1)))
-                elif (row+1, col-1) == self.enpassant:
-                    moves.append(Move(Board.board_state, (row, col), (row+1, col-1), True))
-            if col < 7:
-                if Board.board_state[row+1][col+1][0] == "w":
-                    moves.append(Move(Board.board_state, (row, col), (row+1, col+1)))
-                elif (row+1, col+1) == self.enpassant:
-                    moves.append(Move(Board.board_state, (row, col), (row+1, col+1), True))
-
 @dataclass
 class Rook(Piece):
     name: str
