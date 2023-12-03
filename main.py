@@ -162,7 +162,6 @@ def main():
 def makeAIMove(AI: Bot, moves: List[Move], board: Board, screen, clock: Clock):
     moves = board.get_valid_moves()
     # print(AI.getBestMove(moves, board))
-    py.time.wait(300)
     AI.make_move(moves, board)
     animate_move(board.move_log[-1], screen, board, clock)
     

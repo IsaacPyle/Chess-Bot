@@ -59,17 +59,19 @@ class Bot():
                 return [1000000, move]
 
             # out of all of the valid moves, find one with the largest value for the opponent
-            bestNextVal = max(validMoves, key = lambda x : x[0])[0]
+            bestNextMove = max(validMoves, key = lambda x : x[0])
+            bestNextVal = bestNextMove[0]
+
+            bestNextVal += self.getBestMove(validMoves, board, depth - 1)[0]
             
             move = list(move)
-            move[0] -= bestNextVal
+            move[0] -= bestNextVal if depth % 2 == 0 else move[0] + bestNextVal
             options.append(move)
 
             board.undo_move()
             self.resetBoardVars(board)
 
         bestMoves = list(filter(lambda f: f == max(options, key = lambda x : x[0]), options))
-        # print("Begin options: \n", bestMoves, "\nEnd options")
         return random.choice(bestMoves)
     
     def saveBoard(self, board: Board):
