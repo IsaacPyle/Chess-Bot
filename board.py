@@ -411,12 +411,12 @@ class Board():
                     self.castle_moves.bks = False
 
 
-class Castles():
-    def __init__(self, wks=True, wqs=True, bks=True, bqs=True):
-        self.wks = wks
-        self.wqs = wqs
-        self.bks = bks
-        self.bqs = bqs
+@dataclass
+class Castles:
+    wks: bool = True
+    wqs: bool = True
+    bks: bool = True
+    bqs: bool = True
 
     
 

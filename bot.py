@@ -10,71 +10,88 @@ class Bot():
         self.castles = ()
         self.checkmate = False
         self.stalemate = False
+        self.evaluated = 0
 
     def make_move(self, moves: List[Move], board: Board) -> List[Move]:
+        self.evaluated = 0
+        print(board.castle_moves)
         if len(moves) < 1:
             return False
         
         # preferred_move = (0, self.getRandomMove(moves))
-        values = self.getNextMoveValues(moves)
-        bestAndValue = self.getBestMove(values, board)
-        print(bestAndValue[1])
-        if bestAndValue[1] == None:
-            return
-        print(bestAndValue[0], bestAndValue[1].captured_piece)
-        best = bestAndValue[1]
+        move = self.getBestMove(moves, board, depth=2)
+        print(self.evaluated, move)
+        if not move:
+            return board.get_valid_moves()
 
-        board.make_move(moves[moves.index(best)])
-        # board.make_move(preferred_move[1])
+        board.make_move(move)
         return board.get_valid_moves()
     
     # Find the best move, which is equal to the worst move for opponent after making this move.
     # Worst move for opponent is best for us, which is why we need the depth value
-    def getBestMove(self, moves, board: Board, depth=2) -> List:
+    def getBestMove(self, moves, board: Board, depth=2) -> Move:
         # If no moves to make, return
         if not moves or moves == []:
-            return [0, None]
-        
-        # If depth == 0, we don't want to recurse anymore. Return
-        if depth == 0:
-            best = max(moves, key = lambda x : x[0])[0]
-            # Might be multiple moves with the same value, going to return a random move with that value
-            bestMoves = [[i, j] for i, j in moves if i == best]
-            return random.choice(bestMoves)
+            return None
         
         # For each move available at this state
-        options = []
+        bestMove = None
+        bestEval = -999
 
         for move in moves:
             # We want to save the current state of the board, so it can be reset at the end
-            self.saveBoard(board)
+            self.saveBoardVars(board) # This doesn't work here and in the search method, need to redo
             # Actually make the move
-            board.make_move(move[1])
+            board.make_move(move)
             # Get all valid moves for the opponent, and their values (Based on capturing pieces only)
-            validMoves = self.getNextMoveValues(board.get_valid_moves())
-            # If no valid moves for the next plater, this is the best move. Return this with an essentially infinite value
-            if len(validMoves) == 0:
-                board.undo_move()
-                self.resetBoardVars(board)
-                return [1000000, move]
-
-            # out of all of the valid moves, find one with the largest value for the opponent
-            bestNextMove = max(validMoves, key = lambda x : x[0])
-            bestNextVal = bestNextMove[0]
-
-            bestNextVal += self.getBestMove(validMoves, board, depth - 1)[0]
-            
-            move = list(move)
-            move[0] -= bestNextVal if depth % 2 == 0 else move[0] + bestNextVal
-            options.append(move)
+            evaluation = -self.search(board, depth, -999, 999)
+            if evaluation > bestEval:
+                bestEval = evaluation
+                bestMove = move
 
             board.undo_move()
             self.resetBoardVars(board)
-
-        bestMoves = list(filter(lambda f: f == max(options, key = lambda x : x[0]), options))
-        return random.choice(bestMoves)
+        print(bestEval)
+        return bestMove
     
-    def saveBoard(self, board: Board):
+    def search(self, board: Board, depth: int, alpha: int, beta: int) -> int:
+        if depth == 0:
+            return self.evaluate(board)
+        
+        moves = board.get_valid_moves()
+        if len(moves) == 0:
+            if board.check():
+                return -100000
+            return 0
+        
+        for move in moves:
+            self.saveBoardVars(board)
+            board.make_move(move)
+            evaluation = -self.search(board, depth-1, -beta, -alpha)
+            board.undo_move()
+            self.resetBoardVars(board)
+            if evaluation >= beta:
+                return beta
+            alpha = max(alpha, evaluation)
+
+        return alpha
+
+    def evaluate(self, board: Board) -> int:
+        whiteEval = 0
+        for piece in board.captured_black_pieces:
+            whiteEval += self.piece_values[piece[1]]
+        
+        for piece in board.captured_white_pieces:
+            whiteEval -= self.piece_values[piece[1]]
+        
+        self.evaluated += 1
+        
+        if board.whites_turn:
+            return whiteEval
+
+        return -1 * whiteEval
+    
+    def saveBoardVars(self, board: Board):
         self.enpassant = board.enpassant
         self.castles = Castles(board.castle_moves.wks, board.castle_moves.wqs, board.castle_moves.bks, board.castle_moves.bqs)
         self.checkmate = board.checkmate
