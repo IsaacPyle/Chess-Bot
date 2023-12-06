@@ -128,6 +128,7 @@ def main():
                         print(row)
                     print(bd.white_king_loc)
                     print([x.moved_piece for x in bd.get_valid_moves()])
+                    print([x.moved_piece for x in bd.get_all_moves()])
 
         if made_move:
             if animate:

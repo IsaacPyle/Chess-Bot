@@ -9,6 +9,7 @@ class Bot():
         self.piece_values = {'P': 1, 'B': 3, 'N': 3, 'R': 5, 'Q': 9, 'K': 9, '-': 0} # <-- will be used for evaluation of capturing pieces
         self.enpassant = ()
         self.castles = ()
+        self.deepCastles = ()
         self.checkmate = False
         self.stalemate = False
         self.evaluated = 0
@@ -24,6 +25,7 @@ class Bot():
         move = self.getBestMove(moves, board)
         print(f"checked {self.evaluated} moves, pruned {self.pruned} moves")
         if not move:
+            board.checkmate = True
             return board.get_valid_moves()
 
         board.make_move(move)
@@ -78,7 +80,7 @@ class Bot():
         if depth == 0:
             return self.evaluate(board)
         
-        moves = board.get_valid_moves()
+        moves = board.get_valid_moves(isRealMove=False)
         if len(moves) == 0:
             if board.check():
                 return -100000
@@ -88,11 +90,11 @@ class Bot():
         # print("after:", moves[0].moved_piece)
 
         for move in moves:
-            self.saveBoardVars(board)
+            self.saveBoardVars(board, deep=True)
             board.make_move(move)
             evaluation = -self.search(board, depth-1, -beta, -alpha)
             board.undo_move()
-            self.resetBoardVars(board)
+            self.resetBoardVars(board, deep=True)
             if evaluation >= beta:
                 self.pruned += 1
                 return beta
@@ -115,15 +117,21 @@ class Bot():
 
         return -1 * whiteEval
     
-    def saveBoardVars(self, board: Board):
+    def saveBoardVars(self, board: Board, deep=False):
         self.enpassant = board.enpassant
-        self.castles = Castles(board.castle_moves.wks, board.castle_moves.wqs, board.castle_moves.bks, board.castle_moves.bqs)
+        if deep:
+            self.deepCastles = Castles(board.castle_moves.wks, board.castle_moves.wqs, board.castle_moves.bks, board.castle_moves.bqs)
+        else:
+            self.castles = Castles(board.castle_moves.wks, board.castle_moves.wqs, board.castle_moves.bks, board.castle_moves.bqs)
         self.checkmate = board.checkmate
         self.stalemate = board.stalemate
 
-    def resetBoardVars(self, board: Board):
+    def resetBoardVars(self, board: Board, deep=False):
         board.enpassant = self.enpassant
-        board.castle_moves = self.castles
+        if deep:
+            board.castle_moves = self.deepCastles
+        else:
+            board.castle_moves = self.castles
         board.checkmate = self.checkmate
         board.stalemate = self.stalemate
 

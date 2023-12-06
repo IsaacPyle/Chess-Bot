@@ -77,7 +77,7 @@ class Board():
         self.captured_white_pieces = []
         self.captured_black_pieces = []
 
-    def get_valid_moves(self) -> List[Move]:
+    def get_valid_moves(self, isRealMove = True) -> List[Move]:
         '''
         Gets all possible moves and removes moves that leave or put the king in check. 
         Requires making all possible moves by the current player, then checking all possible moves from the opponent,
@@ -102,7 +102,7 @@ class Board():
         self.enpassant = temp_enpassant
         self.castle_moves = temp_castles
 
-        if len(moves) == 0:
+        if len(moves) == 0 and isRealMove:
             if self.check():
                 self.checkmate = True
             else:
@@ -110,7 +110,7 @@ class Board():
 
         return moves
 
-    def get_all_moves(self) -> List:
+    def get_all_moves(self) -> List[Move]:
         '''
         Gets all moves possible for the current board state.
         '''
