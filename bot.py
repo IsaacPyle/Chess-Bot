@@ -1,9 +1,10 @@
+import heapq
 import random
 from typing import List
 from board import Board, Castles, Move
 
 class Bot():
-    def __init__(self):
+    def __init__(self, depth: int = 2):
         # Ideas here
         self.piece_values = {'P': 1, 'B': 3, 'N': 3, 'R': 5, 'Q': 9, 'K': 9, '-': 0} # <-- will be used for evaluation of capturing pieces
         self.enpassant = ()
@@ -11,16 +12,17 @@ class Bot():
         self.checkmate = False
         self.stalemate = False
         self.evaluated = 0
+        self.pruned = 0
+        self.depth = depth
 
     def make_move(self, moves: List[Move], board: Board) -> List[Move]:
         self.evaluated = 0
-        print(board.castle_moves)
         if len(moves) < 1:
             return False
         
         # preferred_move = (0, self.getRandomMove(moves))
-        move = self.getBestMove(moves, board, depth=2)
-        print(self.evaluated, move)
+        move = self.getBestMove(moves, board)
+        print(f"checked {self.evaluated} moves, pruned {self.pruned} moves")
         if not move:
             return board.get_valid_moves()
 
@@ -29,13 +31,13 @@ class Bot():
     
     # Find the best move, which is equal to the worst move for opponent after making this move.
     # Worst move for opponent is best for us, which is why we need the depth value
-    def getBestMove(self, moves, board: Board, depth=2) -> Move:
+    def getBestMove(self, moves, board: Board) -> Move:
         # If no moves to make, return
         if not moves or moves == []:
             return None
         
         # For each move available at this state
-        bestMove = None
+        bestMoves = []
         bestEval = -999
 
         for move in moves:
@@ -44,15 +46,33 @@ class Bot():
             # Actually make the move
             board.make_move(move)
             # Get all valid moves for the opponent, and their values (Based on capturing pieces only)
-            evaluation = -self.search(board, depth, -999, 999)
+            evaluation = -self.search(board, self.depth, -999, 999)
             if evaluation > bestEval:
                 bestEval = evaluation
-                bestMove = move
+                bestMoves = [move]
+            if evaluation == bestEval:
+                bestMoves.append(move)
 
             board.undo_move()
             self.resetBoardVars(board)
-        print(bestEval)
-        return bestMove
+        
+        print(f"Found {len(bestMoves)} moves with an eval of {bestEval}")
+        return random.choice(bestMoves)
+    
+    def orderMoves(self, moves: List[Move]):
+        moveTuples = []
+        for move in moves:
+            guess = 0
+            if move.captured_piece != '--':
+                guess = self.piece_values[move.captured_piece[1]]
+
+            if move.pawn_promotion:
+                guess += self.piece_values['Q'] # Could make this be whatever the best option is, assuming queen for now
+            
+            heapq.heappush(moveTuples, (guess, move))
+        
+        # print([guess for guess, _ in moveTuples], [guess for guess, _ in list(reversed(moveTuples))])
+        moves = [move for _, move in list(reversed(moveTuples))]
     
     def search(self, board: Board, depth: int, alpha: int, beta: int) -> int:
         if depth == 0:
@@ -63,7 +83,10 @@ class Bot():
             if board.check():
                 return -100000
             return 0
-        
+        # print("before:", moves[0].moved_piece)
+        self.orderMoves(moves)
+        # print("after:", moves[0].moved_piece)
+
         for move in moves:
             self.saveBoardVars(board)
             board.make_move(move)
@@ -71,6 +94,7 @@ class Bot():
             board.undo_move()
             self.resetBoardVars(board)
             if evaluation >= beta:
+                self.pruned += 1
                 return beta
             alpha = max(alpha, evaluation)
 

@@ -123,6 +123,11 @@ def main():
                     made_move = False
                     animate = False
                     game_over = False
+                if e.key == py.K_p:
+                    for row in bd.board_state:
+                        print(row)
+                    print(bd.white_king_loc)
+                    print([x.moved_piece for x in bd.get_valid_moves()])
 
         if made_move:
             if animate:

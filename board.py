@@ -40,6 +40,12 @@ class Move():
         '''
         letters = "hgfedcba"
         return letters[7-col] + str(8-row)
+    
+    def __eq__(self, other):
+        return self.moved_piece == other.moved_piece
+
+    def __lt__(self, other):
+        return self.moved_piece < other.moved_piece
 
 class Board():
     '''
@@ -71,7 +77,7 @@ class Board():
         self.captured_white_pieces = []
         self.captured_black_pieces = []
 
-    def get_valid_moves(self):
+    def get_valid_moves(self) -> List[Move]:
         '''
         Gets all possible moves and removes moves that leave or put the king in check. 
         Requires making all possible moves by the current player, then checking all possible moves from the opponent,
