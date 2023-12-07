@@ -42,42 +42,47 @@ class Move():
         return letters[7-col] + str(8-row)
     
     def __eq__(self, other):
-        return self.moved_piece == other.moved_piece
+        return self.start == other.start and self.end == other.end
 
     def __lt__(self, other):
         return self.moved_piece < other.moved_piece
 
-class Board():
-    '''
-    Stores all information regarding current and starting board state, and handles generating possible moves for each piece. 
-    Keeps a log of moves made to be able to undo moves using the "z" key.
-    '''
-    def __init__(self):
-        self.whites_turn = True
-        self.move_log: List[Move] = []
-        self.initial_state = [
-            ["bR", "bN", "bB", "bQ", "bK", "bB", "bN", "bR"],
-            ["bP", "bP", "bP", "bP", "bP", "bP", "bP", "bP"],
-            ["--", "--", "--", "--", "--", "--", "--", "--"],
-            ["--", "--", "--", "--", "--", "--", "--", "--"],
-            ["--", "--", "--", "--", "--", "--", "--", "--"],
-            ["--", "--", "--", "--", "--", "--", "--", "--"],
-            ["wP", "wP", "wP", "wP", "wP", "wP", "wP", "wP"],
-            ["wR", "wN", "wB", "wQ", "wK", "wB", "wN", "wR"],
-        ]
-        self.board_state = self.initial_state
-        self.move_functions = {"P": self.pawn_moves, "R": self.rook_moves, "B": self.bishop_moves, "N": self.knight_moves, "Q": self.queen_moves, "K": self.king_moves}
-        self.white_king_loc = (7, 4)
-        self.black_king_loc = (0, 4)
-        self.castle_moves = Castles()
-        self.castles_log = [Castles(self.castle_moves.wks, self.castle_moves.wqs, self.castle_moves.bks, self.castle_moves.bqs)]
-        self.enpassant = ()
-        self.checkmate = False
-        self.stalemate = False
-        self.captured_white_pieces = []
-        self.captured_black_pieces = []
+class Board:
+    _instance = None
 
-    def get_valid_moves(self, isRealMove = True) -> List[Move]:
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super(Board, cls).__new__(cls)
+            # Your existing init code here
+            cls._instance.whites_turn = True
+            cls._instance.move_log: List[Move] = []
+            cls._instance.initial_state = [
+                ["bR", "bN", "bB", "bQ", "bK", "bB", "bN", "bR"],
+                ["bP", "bP", "bP", "bP", "bP", "bP", "bP", "bP"],
+                ["--", "--", "--", "--", "--", "--", "--", "--"],
+                ["--", "--", "--", "--", "--", "--", "--", "--"],
+                ["--", "--", "--", "--", "--", "--", "--", "--"],
+                ["--", "--", "--", "--", "--", "--", "--", "--"],
+                ["wP", "wP", "wP", "wP", "wP", "wP", "wP", "wP"],
+                ["wR", "wN", "wB", "wQ", "wK", "wB", "wN", "wR"],
+            ]
+            cls._instance.board_state = cls._instance.initial_state
+            cls._instance.move_functions = {"P": cls._instance.pawn_moves, "R": cls._instance.rook_moves,
+                                            "B": cls._instance.bishop_moves, "N": cls._instance.knight_moves,
+                                            "Q": cls._instance.queen_moves, "K": cls._instance.king_moves}
+            cls._instance.white_king_loc = (7, 4)
+            cls._instance.black_king_loc = (0, 4)
+            cls._instance.castle_moves = Castles()
+            cls._instance.castles_log = [Castles(cls._instance.castle_moves.wks, cls._instance.castle_moves.wqs,
+                                                  cls._instance.castle_moves.bks, cls._instance.castle_moves.bqs)]
+            cls._instance.enpassant = ()
+            cls._instance.checkmate = False
+            cls._instance.stalemate = False
+            cls._instance.captured_white_pieces = []
+            cls._instance.captured_black_pieces = []
+        return cls._instance
+
+    def get_valid_moves(self, isRealMove=True) -> List[Move]:
         '''
         Gets all possible moves and removes moves that leave or put the king in check. 
         Requires making all possible moves by the current player, then checking all possible moves from the opponent,
@@ -91,11 +96,11 @@ class Board():
         else:
             self.get_castle_moves(self.black_king_loc[0], self.black_king_loc[1], moves)
 
-        for i in range(len(moves) - 1, -1, -1):
-            self.make_move(moves[i])
+        for move in moves[::-1]:
+            self.make_move(move)
             self.whites_turn = not self.whites_turn
             if self.check():
-                moves.remove(moves[i])
+                moves.remove(move)
             self.whites_turn = not self.whites_turn
             self.undo_move()
 
