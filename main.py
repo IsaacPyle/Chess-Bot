@@ -59,7 +59,7 @@ def main():
     screen.fill(BACKGROUND)
     draw_gui_elements(screen, font)
     bd = board.Board()
-    AI = bot.Bot(depth=2)
+    AI = bot.Bot(depth=0)
     selected_square = ()
     clicks = []
     valid_moves = bd.get_valid_moves()
