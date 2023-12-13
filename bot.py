@@ -8,11 +8,9 @@ from board import Board, Castles, Move
 class BoardStateVars:
     checkmate: bool
     stalemate: bool
-    castles: Castles
-    enpassant: tuple
 
 class Bot():
-    def __init__(self, depth: int = 2):
+    def __init__(self, depth: int = 0):
         self.piece_values = {'P': 1, 'B': 3, 'N': 3, 'R': 5, 'Q': 9, 'K': 9, '-': 0} # used for evaluation of capturing pieces
         self.evaluated = 0
         self.pruned = 0
@@ -25,7 +23,6 @@ class Bot():
         
         print(board.castle_moves)
         
-        # preferred_move = (0, self.getRandomMove(moves))
         move = self.getBestMove(moves, board)
         print(f"checked {self.evaluated} moves, pruned {self.pruned} moves")
         if not move:
@@ -37,13 +34,13 @@ class Bot():
     
     # Find the best move, which is equal to the worst move for opponent after making this move.
     # Worst move for opponent is best for us, which is why we need the depth value
-    def getBestMove(self, moves, board: Board) -> Move:
+    def getBestMove(self, moves: List[Move], board: Board) -> Move:
         # If no moves to make, return
         if not moves or moves == []:
             return None
         
         # For each move available at this state
-        bestMoves = []
+        bestMoves = moves
         bestEval = -999
         print(board.castle_moves)
         for move in moves:
@@ -60,7 +57,7 @@ class Bot():
                 bestMoves.append(move)
 
             board.undo_move()
-            self.resetBoardVars(bsv)
+            self.resetBoardVars(bsv, board)
         print(board.castle_moves)
         
         print(f"Found {len(bestMoves)} moves with an eval of {bestEval}")
@@ -75,6 +72,9 @@ class Bot():
 
             if move.pawn_promotion:
                 guess += self.piece_values['Q'] # Could make this be whatever the best option is, assuming queen for now
+
+            if Board().piece_attacked(move.end[0], move.end[1]):
+                guess -= self.piece_values[move.captured_piece[1]]
             
             heapq.heappush(moveTuples, (guess, move))
         
@@ -99,7 +99,7 @@ class Bot():
             board.make_move(move)
             evaluation = -self.search(board, depth-1, -beta, -alpha)
             board.undo_move()
-            self.resetBoardVars(bsv)
+            self.resetBoardVars(bsv, board)
             if evaluation >= beta:
                 self.pruned += 1
                 return beta
@@ -123,12 +123,9 @@ class Bot():
         return -1 * whiteEval
     
     def saveBoardVars(self, board: Board) -> BoardStateVars:
-        return BoardStateVars(board.checkmate, board.stalemate, board.castle_moves, board.enpassant)
+        return BoardStateVars(board.checkmate, board.stalemate)
 
-    def resetBoardVars(self, bsv: BoardStateVars):
-        board = Board()
-        board.enpassant = bsv.enpassant
-        board.castle_moves = bsv.castles
+    def resetBoardVars(self, bsv: BoardStateVars, board: Board):
         board.checkmate = bsv.checkmate
         board.stalemate = bsv.stalemate
 

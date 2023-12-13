@@ -53,7 +53,6 @@ class Board:
     def __new__(cls):
         if cls._instance is None:
             cls._instance = super(Board, cls).__new__(cls)
-            # Your existing init code here
             cls._instance.whites_turn = True
             cls._instance.move_log: List[Move] = []
             cls._instance.initial_state = [

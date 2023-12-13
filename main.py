@@ -59,7 +59,7 @@ def main():
     screen.fill(BACKGROUND)
     draw_gui_elements(screen, font)
     bd = board.Board()
-    AI = bot.Bot()
+    AI = bot.Bot(depth=2)
     selected_square = ()
     clicks = []
     valid_moves = bd.get_valid_moves()
@@ -126,7 +126,7 @@ def main():
                 if e.key == py.K_p:
                     for row in bd.board_state:
                         print(row)
-                    print(bd.white_king_loc)
+                    print(bd.bd.castle_moves)
                     print([x.moved_piece for x in bd.get_valid_moves()])
                     print([x.moved_piece for x in bd.get_all_moves()])
 
