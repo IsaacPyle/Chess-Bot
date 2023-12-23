@@ -76,6 +76,15 @@ class Board:
             self.captured_white_pieces = []
             self.captured_black_pieces = []
 
+    def __eq__(self, other: object) -> bool:
+        state = self.board_state == other.board_state
+        castles = self.castle_moves == other.castle_moves
+        turn = self.whites_turn == other.whites_turn
+        return state and castles and turn
+    
+    def __hash__(self) -> int:
+        return id(self)
+
     def get_valid_moves(self, isRealMove=True) -> List[Move]:
         '''
         Gets all possible moves and removes moves that leave or put the king in check. 

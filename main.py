@@ -2,6 +2,7 @@ from typing import List
 import pygame as py
 from pygame import *
 from pygame.time import Clock
+from pygame.font import Font
 from pygame.constants import CONTROLLERAXISMOTION
 import board
 from board import *
@@ -32,7 +33,7 @@ def load_initial_images():
 
     ICON_IMAGES["Icon"] = py.transform.scale(py.image.load("resources/icon.png").convert_alpha(), (SQUARE_SIZE, SQUARE_SIZE))
 
-def draw_gui_elements(screen, font):
+def draw_gui_elements(screen, font: Font):
     label = "Captured Pieces"
     # py.font.SysFont('Helvetica', 16, True, False)
 
@@ -50,7 +51,7 @@ def draw_gui_elements(screen, font):
 
 def main():
     py.init()
-    font = py.font.Font('./resources/Roboto-Medium.ttf', WIDTH // 32)
+    font = Font('./resources/Roboto-Medium.ttf', WIDTH // 32)
     screen = py.display.set_mode((WIDTH * SIDE_BAR_MULTIPLIER, HEIGHT))
     load_initial_images()
     py.display.set_caption('Chess-Bot')
@@ -59,7 +60,7 @@ def main():
     screen.fill(BACKGROUND)
     draw_gui_elements(screen, font)
     bd = board.Board()
-    AI = bot.Bot(depth=0)
+    AI = bot.Bot(depth=2, extraPrints=True)
     selected_square = ()
     clicks = []
     valid_moves = bd.get_valid_moves()
